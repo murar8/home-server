@@ -10,15 +10,30 @@
 
   boot = {
     loader = {
-      systemd-boot.enable = true;
+      systemd-boot.enable = lib.mkForce false;
       efi.canTouchEfiVariables = lib.mkDefault true;
     };
-    kernelParams = [ "ip=192.168.1.130::192.168.1.1:255.255.255.0::enp1s0:none" ];
+    lanzaboote = {
+      enable = true;
+      pkiBundle = "/etc/secureboot";
+    };
     initrd = {
+      systemd = {
+        enable = true;
+        users.root.shell = "/bin/systemd-tty-ask-password-agent";
+        network = {
+          enable = true;
+          networks."10-enp1s0" = {
+            matchConfig.Name = "enp1s0";
+            address = [ "192.168.1.130/24" ];
+            gateway = [ "192.168.1.1" ];
+            networkConfig.DHCP = "no";
+          };
+        };
+      };
       availableKernelModules = [ "r8169" ];
       network = {
         enable = true;
-        flushBeforeStage2 = true;
         ssh = {
           enable = true;
           port = 2222;
@@ -27,9 +42,6 @@
             "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPaCgI6vuTA++m49TSmiQco2Pk/RggMp6W6AQaAEwqUj lorenzo@worldofv.art"
           ];
         };
-        postCommands = ''
-          echo 'cryptsetup-askpass' >> /root/.profile
-        '';
       };
     };
   };

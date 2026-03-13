@@ -1,8 +1,12 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     disko = {
       url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    lanzaboote = {
+      url = "github:nix-community/lanzaboote/v1.0.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     treefmt-nix = {
@@ -15,6 +19,7 @@
     {
       nixpkgs,
       disko,
+      lanzaboote,
       treefmt-nix,
       ...
     }:
@@ -23,6 +28,7 @@
         system = "x86_64-linux";
         modules = [
           disko.nixosModules.disko
+          lanzaboote.nixosModules.lanzaboote
           ./configuration.nix
         ];
       };
