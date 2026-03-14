@@ -104,8 +104,13 @@ in
       "/var/lib/systemd/timers"
       "/var/lib/tailscale"
       "/var/lib/hass"
-      "/var/lib/syncthing"
     ];
+    users.${vars.user} = {
+      directories = [
+        ".config/syncthing"
+        "Documents"
+      ];
+    };
   };
 
   nix.settings.experimental-features = [
@@ -113,10 +118,21 @@ in
     "flakes"
   ];
 
-  environment.systemPackages = [ pkgs.sbctl ];
+  environment.systemPackages = with pkgs; [
+    sbctl
+    git
+    neovim
+  ];
 
   services = {
-    tailscale.enable = true;
+    tailscale = {
+      enable = true;
+      useRoutingFeatures = "server";
+      extraSetFlags = [
+        "--advertise-routes=${vars.net.subnet}/${toString vars.net.prefixLength}"
+        "--advertise-exit-node"
+      ];
+    };
 
     syncthing = {
       enable = true;

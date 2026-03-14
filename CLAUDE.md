@@ -27,6 +27,33 @@ nix flake check
 - SSH fallback unlock: `ssh prodesk-unlock`
 - 4GB btrfs swapfile inside LUKS
 
+## Impermanence
+
+- Root btrfs subvol wiped on every boot via rollback.sh in initrd
+- /tmp and /var/tmp are tmpfs (256M each) — required for systemd PrivateTmp sandboxing on btrfs
+- Persistent dirs listed in `environment.persistence."/persist".directories`
+- HA utility meters and Tailscale state persist via /persist system directories
+- Syncthing config persists via user home dirs (`environment.persistence."/persist".users`)
+- Any new service storing state in /home or ephemeral paths needs explicit persistence entry
+
+## Services
+
+- Home Assistant on port 8123, config managed declaratively; `.storage/` holds runtime state in /var/lib/hass
+- Syncthing GUI on 0.0.0.0:8384 (Tailscale-only via firewall); config in ~/.config/syncthing (persisted), data in ~/Documents
+- Tailscale subnet router (192.168.1.0/24) + exit node; `useRoutingFeatures = "server"`; firewall trusts tailscale0
+- ESPHome garden device (esp-garden) at 192.168.1.132 — config entry + noise PSK in .storage
+
+## SSH Hosts
+
+- `prodesk` — main server (192.168.1.130)
+- `prodesk-unlock` — initrd LUKS unlock (port 2222)
+
+## Tailscale Gotchas
+
+- Subnet routes need ACL grant: `{"src": ["autogroup:member"], "dst": ["192.168.1.0/24"], "ip": ["*"]}`
+- `extraUpFlags` only runs on first login; use `extraSetFlags` for persistent settings
+- `useRoutingFeatures = "server"` required for subnet router/exit node (enables IP forwarding)
+
 ## Installer Pitfalls
 
 - Installer tmpfs too small for flake eval — use standalone `disko --mode destroy,format,mount` instead of `--flake`.
