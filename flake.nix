@@ -9,6 +9,7 @@
       url = "github:nix-community/lanzaboote/v1.0.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    impermanence.url = "github:nix-community/impermanence";
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -20,6 +21,7 @@
       nixpkgs,
       disko,
       lanzaboote,
+      impermanence,
       treefmt-nix,
       ...
     }:
@@ -29,6 +31,7 @@
         modules = [
           disko.nixosModules.disko
           lanzaboote.nixosModules.lanzaboote
+          impermanence.nixosModules.impermanence
           ./configuration.nix
         ];
       };
@@ -37,7 +40,10 @@
         (treefmt-nix.lib.evalModule nixpkgs.legacyPackages.x86_64-linux ./treefmt.nix).config.build.wrapper;
 
       devShells.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.mkShell {
-        packages = with nixpkgs.legacyPackages.x86_64-linux; [ statix nil ];
+        packages = with nixpkgs.legacyPackages.x86_64-linux; [
+          statix
+          nil
+        ];
       };
     };
 }

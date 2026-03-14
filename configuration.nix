@@ -1,5 +1,13 @@
-{ lib, pkgs, ... }:
+{
+  lib,
+  pkgs,
+  config,
+  ...
+}:
 
+let
+  inherit (import ./vars.nix) vars;
+in
 {
   imports = [
     ./hardware-configuration.nix
@@ -7,6 +15,20 @@
   ];
 
   system.stateVersion = "24.11";
+
+  boot.tmp = {
+    useTmpfs = true;
+    tmpfsSize = "256M";
+  };
+
+  systemd.mounts = [
+    {
+      what = "tmpfs";
+      where = "/var/tmp";
+      type = "tmpfs";
+      options = "mode=1777,nosuid,nodev,size=256M";
+    }
+  ];
 
   boot = {
     loader = {
@@ -21,68 +43,139 @@
       systemd = {
         enable = true;
         users.root.shell = "/bin/systemd-tty-ask-password-agent";
+        services.rollback = {
+          description = "Rollback btrfs root to a blank snapshot";
+          wantedBy = [ "initrd.target" ];
+          after = [ "systemd-cryptsetup@cryptroot.service" ];
+          before = [ "sysroot.mount" ];
+          unitConfig.DefaultDependencies = "no";
+          serviceConfig.Type = "oneshot";
+          script = builtins.readFile ./rollback.sh;
+        };
         network = {
           enable = true;
-          networks."10-enp1s0" = {
-            matchConfig.Name = "enp1s0";
-            address = [ "192.168.1.130/24" ];
-            gateway = [ "192.168.1.1" ];
+          networks."10-${vars.net.interface}" = {
+            matchConfig.Name = vars.net.interface;
+            address = [ "${vars.net.ip}/${toString vars.net.prefixLength}" ];
+            gateway = [ vars.net.gateway ];
             networkConfig.DHCP = "no";
           };
         };
       };
       availableKernelModules = [ "r8169" ];
+      supportedFilesystems = [ "btrfs" ];
       network = {
         enable = true;
         ssh = {
           enable = true;
           port = 2222;
           hostKeys = [ "/persist/etc/secrets/initrd/ssh_host_ed25519_key" ];
-          authorizedKeys = [
-            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPaCgI6vuTA++m49TSmiQco2Pk/RggMp6W6AQaAEwqUj lorenzo@worldofv.art"
-          ];
+          authorizedKeys = [ vars.ssh.key ];
         };
       };
     };
   };
 
   networking = {
-    hostName = "server";
+    hostName = vars.hostname;
     useDHCP = false;
-    defaultGateway = "192.168.1.1";
-    nameservers = [
-      "9.9.9.9"
-      "149.112.112.112"
-    ];
-    interfaces.enp1s0 = {
+    defaultGateway = vars.net.gateway;
+    inherit (vars.net) nameservers;
+    interfaces.${vars.net.interface} = {
       ipv4.addresses = [
         {
-          address = "192.168.1.130";
-          prefixLength = 24;
+          address = vars.net.ip;
+          inherit (vars.net) prefixLength;
         }
       ];
+    };
+    firewall = {
+      trustedInterfaces = [ "tailscale0" ];
+      allowedTCPPorts = [ config.services.home-assistant.config.http.server_port ];
     };
   };
 
   security.sudo.wheelNeedsPassword = false;
 
+  environment.persistence."/persist" = {
+    hideMounts = true;
+    directories = [
+      "/etc/secureboot"
+      "/var/lib/nixos"
+      "/var/lib/systemd/timers"
+      "/var/lib/tailscale"
+      "/var/lib/hass"
+      "/var/lib/syncthing"
+    ];
+    files = [ ];
+  };
+
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
+
   environment.systemPackages = [ pkgs.sbctl ];
 
-  services.btrfs.autoScrub.enable = true;
+  services = {
+    tailscale.enable = true;
 
-  services.openssh = {
-    enable = true;
-    settings = {
-      PermitRootLogin = "no";
-      PasswordAuthentication = false;
+    syncthing = {
+      enable = true;
+      inherit (vars) user;
+      dataDir = "/home/${vars.user}";
+      openDefaultPorts = true;
+    };
+
+    home-assistant = {
+      enable = true;
+      extraComponents = [
+        "esphome"
+        "met"
+        "isal"
+      ];
+      config = {
+        default_config = { };
+        homeassistant = {
+          name = "Home";
+          unit_system = "metric";
+        };
+        recorder = { };
+        history = { };
+        logger.default = "info";
+        lovelace.mode = "yaml";
+      };
+      lovelaceConfig = import ./lovelace.nix;
+    };
+
+    btrfs.autoScrub.enable = true;
+
+    openssh = {
+      enable = true;
+      hostKeys = [
+        {
+          path = "/persist/etc/ssh/ssh_host_ed25519_key";
+          type = "ed25519";
+        }
+        {
+          path = "/persist/etc/ssh/ssh_host_rsa_key";
+          type = "rsa";
+          bits = 4096;
+        }
+      ];
+      settings = {
+        PermitRootLogin = "no";
+        PasswordAuthentication = false;
+      };
     };
   };
 
-  users.users.murar8 = {
+  users.mutableUsers = false;
+
+  users.users.${vars.user} = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPaCgI6vuTA++m49TSmiQco2Pk/RggMp6W6AQaAEwqUj lorenzo@worldofv.art"
-    ];
+    hashedPasswordFile = "/persist/etc/secrets/user-password";
+    openssh.authorizedKeys.keys = [ vars.ssh.key ];
   };
 }
