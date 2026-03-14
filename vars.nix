@@ -1,6 +1,6 @@
 {
   vars = {
-    hostname = "server";
+    hostname = "prodesk";
     user = "murar8";
 
     net = {

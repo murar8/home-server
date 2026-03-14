@@ -58,7 +58,6 @@ in
             matchConfig.Name = vars.net.interface;
             address = [ "${vars.net.ip}/${toString vars.net.prefixLength}" ];
             gateway = [ vars.net.gateway ];
-            networkConfig.DHCP = "no";
           };
         };
       };
@@ -107,7 +106,6 @@ in
       "/var/lib/hass"
       "/var/lib/syncthing"
     ];
-    files = [ ];
   };
 
   nix.settings.experimental-features = [
@@ -125,6 +123,7 @@ in
       inherit (vars) user;
       dataDir = "/home/${vars.user}";
       openDefaultPorts = true;
+      guiAddress = "0.0.0.0:8384";
     };
 
     home-assistant = {
@@ -140,10 +139,31 @@ in
           name = "Home";
           unit_system = "metric";
         };
-        recorder = { };
-        history = { };
         logger.default = "info";
         lovelace.mode = "yaml";
+        utility_meter =
+          let
+            plant = suffix: source: {
+              "plant_${suffix}_hourly" = {
+                inherit source;
+                cycle = "hourly";
+              };
+              "plant_${suffix}_daily" = {
+                inherit source;
+                cycle = "daily";
+              };
+              "plant_${suffix}_weekly" = {
+                inherit source;
+                cycle = "weekly";
+              };
+              "plant_${suffix}_monthly" = {
+                inherit source;
+                cycle = "monthly";
+              };
+            };
+          in
+          (plant "a" "sensor.esp_garden_total_water_dispensed_a")
+          // (plant "b" "sensor.esp_garden_total_water_dispensed_b");
       };
       lovelaceConfig = import ./lovelace.nix;
     };
