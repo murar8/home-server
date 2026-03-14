@@ -15,6 +15,8 @@
       ];
     };
 
+    tailnet = "tail87795f.ts.net";
+
     ssh = {
       key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKCfqnufJrf3pZxXvFcqbB1vUhyc0EFuDBuUEO7Q0Luq lnzmrr@gmail.com";
     };

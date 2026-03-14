@@ -8,6 +8,8 @@
 
 let
   inherit (import ./vars.nix) vars;
+  fqdn = "${vars.hostname}.${vars.tailnet}";
+  syncthingGuiPort = lib.toInt (lib.last (lib.splitString ":" config.services.syncthing.guiAddress));
 in
 {
   imports = [
@@ -93,6 +95,10 @@ in
     };
   };
 
+  programs.bash.loginShellInit = ''
+    [ -f ~/.bashrc ] && . ~/.bashrc
+  '';
+
   networking = {
     hostName = vars.hostname;
     useDHCP = false;
@@ -108,7 +114,10 @@ in
     };
     firewall = {
       trustedInterfaces = [ "tailscale0" ];
-      allowedTCPPorts = [ config.services.home-assistant.config.http.server_port ];
+      allowedTCPPorts = [
+        config.services.home-assistant.config.http.server_port
+        syncthingGuiPort
+      ];
     };
   };
 
@@ -122,6 +131,7 @@ in
       "/var/lib/systemd/timers"
       "/var/lib/tailscale"
       "/var/lib/hass"
+      "/var/lib/caddy"
     ];
     users.${vars.user}.directories = [
       ".config/syncthing"
@@ -144,10 +154,20 @@ in
     tailscale = {
       enable = true;
       useRoutingFeatures = "server";
+      permitCertUid = "caddy";
       extraSetFlags = [
         "--advertise-routes=${vars.net.subnet}/${toString vars.net.prefixLength}"
         "--advertise-exit-node"
       ];
+    };
+
+    caddy = {
+      enable = true;
+      virtualHosts.${fqdn} = {
+        extraConfig = ''
+          reverse_proxy 127.0.0.1:${toString config.services.home-assistant.config.http.server_port}
+        '';
+      };
     };
 
     syncthing = {
@@ -170,6 +190,15 @@ in
         homeassistant = {
           name = "Home";
           unit_system = "metric";
+          external_url = "https://${fqdn}";
+          internal_url = "https://${fqdn}";
+        };
+        http = {
+          use_x_forwarded_for = true;
+          trusted_proxies = [
+            "127.0.0.1"
+            "::1"
+          ];
         };
         logger.default = "info";
         lovelace.mode = "yaml";
