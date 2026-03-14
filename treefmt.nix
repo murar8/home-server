@@ -6,7 +6,10 @@
       enable = true;
       package = pkgs.nixfmt-rfc-style;
     };
-    prettier.enable = true;
+    prettier = {
+      enable = true;
+      includes = [ "*.hujson" ];
+    };
     shellcheck.enable = true;
     shfmt.enable = true;
   };
