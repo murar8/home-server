@@ -2,6 +2,7 @@
   lib,
   pkgs,
   config,
+  dotfiles,
   ...
 }:
 
@@ -19,6 +20,23 @@ in
   boot.tmp = {
     useTmpfs = true;
     tmpfsSize = "256M";
+  };
+
+  systemd.services.dotfiles-checkout = {
+    description = "Checkout dotfiles into home directory";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      User = vars.user;
+      Group = "users";
+    };
+    path = with pkgs; [
+      git
+      openssh
+    ];
+    script = builtins.readFile "${dotfiles}/.bootstrap";
   };
 
   systemd.mounts = [
@@ -105,12 +123,10 @@ in
       "/var/lib/tailscale"
       "/var/lib/hass"
     ];
-    users.${vars.user} = {
-      directories = [
-        ".config/syncthing"
-        "Documents"
-      ];
-    };
+    users.${vars.user}.directories = [
+      ".config/syncthing"
+      "Documents"
+    ];
   };
 
   nix.settings.experimental-features = [

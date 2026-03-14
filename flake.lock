@@ -35,6 +35,22 @@
         "type": "github"
       }
     },
+    "dotfiles": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1773508735,
+        "narHash": "sha256-bO/yV2HBhJ9Z/9npe8o5b3+UKelYXafFVyHIVdLVYOM=",
+        "owner": "murar8",
+        "repo": "dotfiles",
+        "rev": "0dbaad22499815bd37a1dd4ae55a5cd018355d0f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "murar8",
+        "repo": "dotfiles",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -254,6 +270,7 @@
     "root": {
       "inputs": {
         "disko": "disko",
+        "dotfiles": "dotfiles",
         "git-hooks": "git-hooks",
         "impermanence": "impermanence",
         "lanzaboote": "lanzaboote",

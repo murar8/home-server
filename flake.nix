@@ -10,6 +10,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     impermanence.url = "github:nix-community/impermanence";
+    dotfiles = {
+      url = "github:murar8/dotfiles";
+      flake = false;
+    };
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -27,6 +31,7 @@
       disko,
       lanzaboote,
       impermanence,
+      dotfiles,
       treefmt-nix,
       git-hooks,
       ...
@@ -34,6 +39,7 @@
     {
       nixosConfigurations.server = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
+        specialArgs = { inherit dotfiles; };
         modules = [
           disko.nixosModules.disko
           lanzaboote.nixosModules.lanzaboote
