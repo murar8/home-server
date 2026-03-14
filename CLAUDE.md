@@ -38,8 +38,9 @@ nix flake check
 
 ## Services
 
-- Home Assistant on port 8123, config managed declaratively; `.storage/` holds runtime state in /var/lib/hass
-- Syncthing GUI on 0.0.0.0:8384 (Tailscale-only via firewall); config in ~/.config/syncthing (persisted), data in ~/Documents
+- Home Assistant in `home-assistant.nix`, port 8123, config managed declaratively; `.storage/` holds runtime state in /var/lib/hass
+- Caddy reverse proxy with Tailscale auto-TLS; HA at `https://prodesk.tail87795f.ts.net`; cert cache in /var/lib/caddy (persisted)
+- Syncthing GUI on 0.0.0.0:8384 (LAN + Tailscale via firewall); config in ~/.config/syncthing (persisted), data in ~/Documents
 - Tailscale subnet router (192.168.1.0/24) + exit node; `useRoutingFeatures = "server"`; firewall trusts tailscale0
 - ESPHome garden device (esp-garden) at 192.168.1.132 — config entry + noise PSK in .storage
 
@@ -48,11 +49,31 @@ nix flake check
 - `prodesk` — main server (192.168.1.130)
 - `prodesk-unlock` — initrd LUKS unlock (port 2222)
 
+## CI/CD
+
+- GitHub Actions deploys Tailscale ACL policy via `tailscale/gitops-acl-action` on push to main
+- ACL policy in `policy.hujson` (HuJSON = JSON + comments + trailing commas, NOT JSON5 — keys must be quoted)
+- OAuth client needs `Policy File` read+write scope; secrets: `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET`, `TS_TAILNET`
+- Tailnet Lock is enabled; new nodes need `tailscale lock sign <node-key>`
+
+## Formatting
+
+- Prettier handles YAML, JSON, Markdown, and HuJSON (via `.prettierrc.json` with `jsonc` parser)
+- `treefmt.nix` `includes = [ "*.hujson" ]` adds HuJSON to prettier; config files must be git-tracked for Nix sandbox
+- `.markdownlint.jsonc` extends `markdownlint/style/prettier` to avoid conflicts
+
 ## Tailscale Gotchas
 
+- `permitCertUid = "caddy"` required for Caddy to fetch Tailscale TLS certs
+- Caddy can't share ports with backend services — use default 443, not service ports
 - Subnet routes need ACL grant: `{"src": ["autogroup:member"], "dst": ["192.168.1.0/24"], "ip": ["*"]}`
 - `extraUpFlags` only runs on first login; use `extraSetFlags` for persistent settings
 - `useRoutingFeatures = "server"` required for subnet router/exit node (enables IP forwarding)
+
+## Nix Gotchas
+
+- New `.nix` files must be `git add`ed before `nix flake check` or rebuild — Nix sandbox only sees tracked files
+- `boot.initrd.network.ssh` is the correct initrd SSH option even with `boot.initrd.systemd.enable = true` — the module handles both paths internally
 
 ## Installer Pitfalls
 
