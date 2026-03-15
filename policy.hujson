@@ -3,7 +3,6 @@
     // Nodes running in initramfs before disk unlock.
     // State file is in plaintext on unencrypted boot partition — restrict to inbound-only.
     "tag:initrd": ["autogroup:admin"],
-
     // Ephemeral GitHub Actions runners for ACL deployment.
     "tag:ci": ["autogroup:admin"],
   },

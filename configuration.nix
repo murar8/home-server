@@ -122,8 +122,6 @@ in
     };
   };
 
-  security.sudo.wheelNeedsPassword = false;
-
   environment.persistence."/persist" = {
     hideMounts = true;
     directories = [

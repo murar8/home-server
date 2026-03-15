@@ -5,8 +5,8 @@ HP ProDesk 400 G3 SFF (i5-6500, 4GB RAM, Realtek r8169 NIC) running NixOS 25.11 
 ## Commands
 
 ```sh
-# Rebuild remotely
-nix run nixpkgs#nixos-rebuild -- switch --flake .#server --target-host prodesk --build-host prodesk --sudo
+# Rebuild remotely (run in terminal — needs interactive sudo password prompt)
+nix run nixpkgs#nixos-rebuild -- switch --flake .#server --target-host prodesk --build-host prodesk --ask-sudo-password
 
 # Format
 nix fmt
@@ -74,6 +74,8 @@ nix flake check
 
 - New `.nix` files must be `git add`ed before `nix flake check` or rebuild — Nix sandbox only sees tracked files
 - `boot.initrd.network.ssh` is the correct initrd SSH option even with `boot.initrd.systemd.enable = true` — the module handles both paths internally
+- `nixos-rebuild-ng` (NixOS 25.11) wraps all remote `--sudo` commands through `sudo /bin/sh -c` — command-specific NOPASSWD sudoers rules don't work; use `--ask-sudo-password` instead
+- `--ask-sudo-password` requires interactive terminal — Claude Code cannot run rebuilds
 
 ## Installer Pitfalls
 
