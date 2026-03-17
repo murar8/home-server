@@ -26,6 +26,7 @@ nix flake check
 - After LUKS header changes (resize, re-encrypt), TPM2 must be re-enrolled
 - LUKS uses 4096-byte sectors; partition size must be multiple of 8 × 512-byte sectors or `cryptsetup resize` fails
 - `disko --mode format,mount` is incremental for btrfs — skips existing filesystems/subvolumes, creates only new ones
+- `disko --dry-run --mode <mode>` prints the generated script path — `cat` it to review
 - Secure Boot via lanzaboote v1.0.0 (keys in /etc/secureboot)
 - TPM2 auto-unlock (PCR 7); re-enroll if SB keys change: `printf "<password>" | sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 --unlock-key-file=/dev/stdin /dev/disk/by-partlabel/disk-main-luks`
 - SSH fallback unlock: `ssh prodesk-unlock`
@@ -34,6 +35,7 @@ nix flake check
 ## Impermanence
 
 - Root btrfs subvol wiped on every boot via rollback.sh in initrd
+- `root-blank` btrfs subvolume must be created manually after initial disko format (empty subvol used as snapshot source by rollback.sh)
 - /tmp and /var/tmp are tmpfs (256M each) — required for systemd PrivateTmp sandboxing on btrfs
 - Persistent dirs listed in `environment.persistence."/persist".directories`
 - HA utility meters and Tailscale state persist via /persist system directories
@@ -53,7 +55,7 @@ nix flake check
 ## SSH Hosts
 
 - `prodesk` — main server (192.168.1.130)
-- `prodesk-unlock` — initrd LUKS unlock (port 2222)
+- `prodesk-unlock` — initrd LUKS unlock (port 2222, physical NIC, not Tailscale)
 
 ## CI/CD
 
