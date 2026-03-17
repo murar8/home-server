@@ -1,6 +1,6 @@
 _: {
   disko.devices.disk.main = {
-    device = "/dev/disk/by-id/usb-Intenso_Portable_SSD_20230428302EB-0:0";
+    device = "/dev/disk/by-id/ata-SanDisk_SSD_PLUS_480GB_252329404739";
     type = "disk";
     content = {
       type = "gpt";
@@ -56,6 +56,13 @@ _: {
                 };
                 "/log" = {
                   mountpoint = "/var/log";
+                  mountOptions = [
+                    "compress=zstd:1"
+                    "noatime"
+                  ];
+                };
+                "/share" = {
+                  mountpoint = "/share";
                   mountOptions = [
                     "compress=zstd:1"
                     "noatime"

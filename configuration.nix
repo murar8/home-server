@@ -25,31 +25,37 @@ in
     tmpfsSize = "256M";
   };
 
-  systemd.services.dotfiles-checkout = {
-    description = "Checkout dotfiles into home directory";
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      User = vars.user;
-      Group = "users";
+  systemd = {
+    services.dotfiles-checkout = {
+      description = "Checkout dotfiles into home directory";
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        User = vars.user;
+        Group = "users";
+      };
+      path = with pkgs; [
+        git
+        openssh
+      ];
+      script = builtins.readFile "${dotfiles}/.bootstrap";
     };
-    path = with pkgs; [
-      git
-      openssh
-    ];
-    script = builtins.readFile "${dotfiles}/.bootstrap";
-  };
 
-  systemd.mounts = [
-    {
-      what = "tmpfs";
-      where = "/var/tmp";
-      type = "tmpfs";
-      options = "mode=1777,nosuid,nodev,size=256M";
-    }
-  ];
+    tmpfiles.rules = [
+      "d /share 0755 ${vars.user} users -"
+    ];
+
+    mounts = [
+      {
+        what = "tmpfs";
+        where = "/var/tmp";
+        type = "tmpfs";
+        options = "mode=1777,nosuid,nodev,size=256M";
+      }
+    ];
+  };
 
   boot = {
     loader = {
@@ -131,6 +137,7 @@ in
       "/var/lib/tailscale"
       "/var/lib/hass"
       "/var/lib/caddy"
+      "/var/lib/samba"
     ];
     users.${vars.user}.directories = [
       ".config/syncthing"
@@ -183,6 +190,35 @@ in
       dataDir = "/home/${vars.user}";
       openDefaultPorts = true;
       guiAddress = "0.0.0.0:8384";
+    };
+
+    samba = {
+      enable = true;
+      openFirewall = true;
+      settings = {
+        global = {
+          "workgroup" = "WORKGROUP";
+          "server string" = vars.hostname;
+          "netbios name" = vars.hostname;
+          "security" = "user";
+          "server min protocol" = "SMB3";
+          "server smb encrypt" = "required";
+          "hosts allow" = "${vars.net.subnetPrefix} 127.0.0.1 localhost";
+          "hosts deny" = "0.0.0.0/0";
+        };
+        share = {
+          path = "/share";
+          "valid users" = vars.user;
+          writable = "yes";
+          "create mask" = "0644";
+          "directory mask" = "0755";
+        };
+      };
+    };
+
+    samba-wsdd = {
+      enable = true;
+      openFirewall = true;
     };
 
     btrfs.autoScrub.enable = true;

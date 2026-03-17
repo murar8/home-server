@@ -7,6 +7,7 @@
       ip = "192.168.1.130";
       prefixLength = 24;
       subnet = "192.168.1.0";
+      subnetPrefix = "192.168.1.";
       gateway = "192.168.1.1";
       interface = "enp1s0";
       nameservers = [
