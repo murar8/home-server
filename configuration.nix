@@ -20,7 +20,92 @@ in
 
   system.stateVersion = "24.11";
 
+  programs.bash.loginShellInit = ''
+    [ -f ~/.bashrc ] && . ~/.bashrc
+  '';
+
+  users.mutableUsers = false;
+
+  users.users.${vars.user} = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" ];
+    hashedPasswordFile = "/persist/etc/secrets/user-password";
+    openssh.authorizedKeys.keys = [ vars.ssh.key ];
+  };
+
+  nix = {
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 7d";
+    };
+    settings = {
+      auto-optimise-store = true;
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
+    };
+  };
+
+  environment = {
+    systemPackages = with pkgs; [
+      sbctl
+      git
+      nano
+      neovim
+    ];
+
+    persistence."/persist" = {
+      hideMounts = true;
+      directories = [
+        "/etc/secureboot"
+        "/var/lib/nixos"
+        "/var/lib/systemd/timers"
+      ];
+    };
+  };
+
+  services = {
+    btrfs.autoScrub.enable = true;
+
+    openssh = {
+      enable = true;
+      # https://man.openbsd.org/ssh-keygen#DESCRIPTION
+      # ed25519 only — smaller keys, faster, no known structural weaknesses
+      hostKeys = [
+        {
+          path = "/persist/etc/ssh/ssh_host_ed25519_key";
+          type = "ed25519";
+        }
+      ];
+      settings = {
+        PermitRootLogin = "no";
+        PasswordAuthentication = false;
+        # https://xeiaso.net/blog/paranoid-nixos-2021-07-18/
+        # https://man.openbsd.org/sshd_config
+        # prevent a compromised session from being used as a network tunnel
+        AllowTcpForwarding = false;
+        AllowAgentForwarding = false;
+        AllowStreamLocalForwarding = false;
+        # https://man.openbsd.org/sshd_config#ClientAliveInterval
+        # drop idle sessions after ~10 min (interval × countMax); does not affect initrd SSH
+        ClientAliveInterval = 300;
+        ClientAliveCountMax = 2;
+      };
+    };
+  };
+
   systemd = {
+    mounts = [
+      {
+        what = "tmpfs";
+        where = "/var/tmp";
+        type = "tmpfs";
+        options = "mode=1777,nosuid,nodev,size=256M";
+      }
+    ];
+
     services.dotfiles-checkout = {
       description = "Checkout dotfiles into home directory";
       after = [ "network-online.target" ];
@@ -61,19 +146,6 @@ in
       ];
       script = builtins.readFile "${dotfiles}/.bootstrap";
     };
-
-    tmpfiles.rules = [
-      "d /share 0755 ${vars.user} users -"
-    ];
-
-    mounts = [
-      {
-        what = "tmpfs";
-        where = "/var/tmp";
-        type = "tmpfs";
-        options = "mode=1777,nosuid,nodev,size=256M";
-      }
-    ];
   };
 
   boot = {
@@ -90,6 +162,17 @@ in
       pkiBundle = "/etc/secureboot";
     };
     initrd = {
+      availableKernelModules = [ "r8169" ];
+      supportedFilesystems = [ "btrfs" ];
+      network = {
+        enable = true;
+        ssh = {
+          enable = true;
+          port = 2222;
+          hostKeys = [ "/persist/etc/secrets/initrd/ssh_host_ed25519_key" ];
+          authorizedKeys = [ vars.ssh.key ];
+        };
+      };
       systemd = {
         enable = true;
         users.root.shell = "/bin/systemd-tty-ask-password-agent";
@@ -111,101 +194,6 @@ in
           };
         };
       };
-      availableKernelModules = [ "r8169" ];
-      supportedFilesystems = [ "btrfs" ];
-      network = {
-        enable = true;
-        ssh = {
-          enable = true;
-          port = 2222;
-          hostKeys = [ "/persist/etc/secrets/initrd/ssh_host_ed25519_key" ];
-          authorizedKeys = [ vars.ssh.key ];
-        };
-      };
     };
-  };
-
-  programs.bash.loginShellInit = ''
-    [ -f ~/.bashrc ] && . ~/.bashrc
-  '';
-
-  environment = {
-    persistence."/persist" = {
-      hideMounts = true;
-      directories = [
-        "/etc/secureboot"
-        "/var/lib/nixos"
-        "/var/lib/systemd/timers"
-        "/var/lib/tailscale"
-        "/var/lib/hass"
-        "/var/lib/caddy"
-        "/var/lib/samba"
-      ];
-      users.${vars.user}.directories = [
-        ".config/syncthing"
-        "Documents"
-      ];
-    };
-
-    systemPackages = with pkgs; [
-      sbctl
-      git
-      nano
-      neovim
-    ];
-  };
-
-  nix = {
-    gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 7d";
-    };
-    settings = {
-      experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
-      auto-optimise-store = true;
-    };
-  };
-
-  services = {
-    btrfs.autoScrub.enable = true;
-
-    openssh = {
-      enable = true;
-      # https://man.openbsd.org/ssh-keygen#DESCRIPTION
-      # ed25519 only — smaller keys, faster, no known structural weaknesses
-      hostKeys = [
-        {
-          path = "/persist/etc/ssh/ssh_host_ed25519_key";
-          type = "ed25519";
-        }
-      ];
-      settings = {
-        PermitRootLogin = "no";
-        PasswordAuthentication = false;
-        # https://xeiaso.net/blog/paranoid-nixos-2021-07-18/
-        # https://man.openbsd.org/sshd_config
-        # prevent a compromised session from being used as a network tunnel
-        AllowTcpForwarding = false;
-        AllowAgentForwarding = false;
-        AllowStreamLocalForwarding = false;
-        # https://man.openbsd.org/sshd_config#ClientAliveInterval
-        # drop idle sessions after ~10 min (interval × countMax); does not affect initrd SSH
-        ClientAliveInterval = 300;
-        ClientAliveCountMax = 2;
-      };
-    };
-  };
-
-  users.mutableUsers = false;
-
-  users.users.${vars.user} = {
-    isNormalUser = true;
-    extraGroups = [ "wheel" ];
-    hashedPasswordFile = "/persist/etc/secrets/user-password";
-    openssh.authorizedKeys.keys = [ vars.ssh.key ];
   };
 }

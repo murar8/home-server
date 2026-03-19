@@ -1,8 +1,4 @@
-{
-  config,
-  lib,
-  ...
-}:
+{ config, lib, ... }:
 
 let
   inherit (import ./vars.nix) vars;
@@ -26,19 +22,7 @@ in
     firewall = {
       trustedInterfaces = [ "tailscale0" ];
       # restrict service ports to physical LAN only
-      interfaces.${vars.net.interface} = {
-        allowedTCPPorts = [
-          config.services.home-assistant.config.http.server_port
-          syncthingGuiPort
-          139
-          445
-        ];
-        allowedUDPPorts = [
-          137
-          138
-          3702
-        ];
-      };
+      interfaces.${vars.net.interface}.allowedTCPPorts = [ syncthingGuiPort ];
     };
   };
 
@@ -69,6 +53,17 @@ in
       openDefaultPorts = true;
       guiAddress = "0.0.0.0:8384";
     };
+  };
+
+  environment.persistence."/persist" = {
+    directories = [
+      "/var/lib/tailscale"
+      "/var/lib/caddy"
+    ];
+    users.${vars.user}.directories = [
+      ".config/syncthing"
+      "Documents"
+    ];
   };
 
   # https://wiki.nixos.org/wiki/Systemd_Hardening

@@ -1,9 +1,29 @@
-{
-  lib,
-  ...
-}:
+{ lib, ... }:
 
 {
+  # https://xeiaso.net/blog/paranoid-nixos-2021-07-18/
+  # prevent service accounts from accessing compilers and scripting languages via nix
+  nix.settings.allowed-users = [ "@wheel" ];
+
+  # https://xeiaso.net/blog/paranoid-nixos-2021-07-18/
+  # replace default packages (nano, perl, rsync, strace) with explicit list
+  environment.defaultPackages = lib.mkForce [ ];
+
+  security = {
+    # https://xeiaso.net/blog/paranoid-nixos-2021-07-18/
+    # https://man7.org/linux/man-pages/man8/auditd.8.html
+    # log every program execution for intrusion detection
+    auditd.enable = true;
+    audit = {
+      enable = true;
+      rules = [ "-a exit,always -F arch=b64 -S execve" ];
+    };
+
+    # https://xeiaso.net/blog/paranoid-nixos-2021-07-18/
+    # only wheel users can execute the sudo binary, not just use it
+    sudo.execWheelOnly = true;
+  };
+
   # https://madaidans-insecurities.github.io/guides/linux-hardening.html#kernel-modules
   # prevent loading unused network protocols and filesystems (common local exploit targets)
   boot.extraModprobeConfig = ''
@@ -50,27 +70,4 @@
     # allow only sync (16) + remount-ro (32) + reboot (128) for emergency recovery
     "kernel.sysrq" = 176;
   };
-
-  security = {
-    # https://xeiaso.net/blog/paranoid-nixos-2021-07-18/
-    # https://man7.org/linux/man-pages/man8/auditd.8.html
-    # log every program execution for intrusion detection
-    auditd.enable = true;
-    audit = {
-      enable = true;
-      rules = [ "-a exit,always -F arch=b64 -S execve" ];
-    };
-
-    # https://xeiaso.net/blog/paranoid-nixos-2021-07-18/
-    # only wheel users can execute the sudo binary, not just use it
-    sudo.execWheelOnly = true;
-  };
-
-  # https://xeiaso.net/blog/paranoid-nixos-2021-07-18/
-  # prevent service accounts from accessing compilers and scripting languages via nix
-  nix.settings.allowed-users = [ "@wheel" ];
-
-  # https://xeiaso.net/blog/paranoid-nixos-2021-07-18/
-  # replace default packages (nano, perl, rsync, strace) with explicit list
-  environment.defaultPackages = lib.mkForce [ ];
 }

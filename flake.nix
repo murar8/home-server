@@ -1,6 +1,11 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    impermanence.url = "github:nix-community/impermanence";
+    dotfiles = {
+      url = "github:murar8/dotfiles";
+      flake = false;
+    };
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -8,11 +13,6 @@
     lanzaboote = {
       url = "github:nix-community/lanzaboote/v1.0.0";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-    impermanence.url = "github:nix-community/impermanence";
-    dotfiles = {
-      url = "github:murar8/dotfiles";
-      flake = false;
     };
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
@@ -54,16 +54,16 @@
       checks.x86_64-linux.git-hooks = git-hooks.lib.x86_64-linux.run {
         src = ./.;
         hooks = {
-          treefmt = {
-            enable = true;
-            package = self.formatter.x86_64-linux;
-          };
           statix.enable = true;
+          markdownlint.enable = true;
           nil = {
             enable = true;
             settings.denyWarnings = true;
           };
-          markdownlint.enable = true;
+          treefmt = {
+            enable = true;
+            package = self.formatter.x86_64-linux;
+          };
         };
       };
 

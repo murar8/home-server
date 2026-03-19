@@ -12,19 +12,17 @@
 {
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
 
-  boot = {
-    initrd.availableKernelModules = [
-      "xhci_pci"
-      "ahci"
-      "usb_storage"
-      "uas"
-      "sd_mod"
-      "sr_mod"
-      "tpm_tis"
-      "tpm_crb"
-    ];
-  };
-
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+
+  boot.initrd.availableKernelModules = [
+    "xhci_pci"
+    "ahci"
+    "usb_storage"
+    "uas"
+    "sd_mod"
+    "sr_mod"
+    "tpm_tis"
+    "tpm_crb"
+  ];
 }

@@ -50,6 +50,23 @@ in
     };
   };
 
+  environment.persistence."/persist".directories = [ "/var/lib/samba" ];
+
+  systemd.tmpfiles.rules = [ "d /share 0755 ${vars.user} users -" ];
+
+  # LAN-only — not exposed on Tailscale
+  networking.firewall.interfaces.${vars.net.interface} = {
+    allowedTCPPorts = [
+      139
+      445
+    ];
+    allowedUDPPorts = [
+      137
+      138
+      3702
+    ];
+  };
+
   # https://wiki.nixos.org/wiki/Systemd_Hardening
   # sandbox samba: runs as root for auth but doesn't need kernel/hw access
   systemd.services = {

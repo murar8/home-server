@@ -2,15 +2,16 @@
 {
   projectRootFile = "flake.nix";
   programs = {
-    nixfmt = {
-      enable = true;
-      package = pkgs.nixfmt-rfc-style;
-    };
+    shellcheck.enable = true;
+    shfmt.enable = true;
     prettier = {
       enable = true;
       includes = [ "*.hujson" ];
     };
-    shellcheck.enable = true;
-    shfmt.enable = true;
+    nixfmt = {
+      enable = true;
+      package = pkgs.nixfmt-rfc-style;
+      strict = true;
+    };
   };
 }

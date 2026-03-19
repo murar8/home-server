@@ -37,9 +37,8 @@ nix flake check
 - Root btrfs subvol wiped on every boot via rollback.sh in initrd
 - `root-blank` btrfs subvolume must be created manually after initial disko format (empty subvol used as snapshot source by rollback.sh)
 - /tmp and /var/tmp are tmpfs (256M each) — required for systemd PrivateTmp sandboxing on btrfs
-- Persistent dirs listed in `environment.persistence."/persist".directories`
-- HA utility meters and Tailscale state persist via /persist system directories
-- Syncthing config persists via user home dirs (`environment.persistence."/persist".users`)
+- Persistence entries live in each module alongside the service they support (NixOS merges them)
+- Core system dirs (`/etc/secureboot`, `/var/lib/nixos`, `/var/lib/systemd/timers`) in `configuration.nix`
 - Any new service storing state in /home or ephemeral paths needs explicit persistence entry
 
 ## Services
@@ -54,11 +53,13 @@ nix flake check
 
 ## Module Structure
 
-- `configuration.nix` — core system: boot, initrd, impermanence, users, dotfiles, openssh, nix settings
-- `networking.nix` — networking, firewall, Tailscale, Caddy (+ its systemd hardening), Syncthing
-- `samba.nix` — Samba, samba-wsdd, smbd/nmbd systemd hardening
+- Each module owns its service config, persistence entries, firewall ports, and systemd hardening
+- Deleting a module should only require removing its import line
+- `configuration.nix` — core system: boot, initrd, users, dotfiles, openssh, nix settings, core persistence
+- `networking.nix` — networking, firewall base, Tailscale, Caddy (+ hardening), Syncthing, their persistence
+- `samba.nix` — Samba, samba-wsdd, firewall ports, /share tmpfiles, samba persistence, smbd/nmbd hardening
 - `hardening.nix` — kernel sysctls, module blacklist, audit, sudo, nix access control
-- `home-assistant.nix` — Home Assistant config, lovelace dashboard
+- `home-assistant.nix` — Home Assistant config, lovelace dashboard, HA firewall port, hass persistence
 
 ## SSH Hosts
 
@@ -77,6 +78,11 @@ nix flake check
 - Prettier handles YAML, JSON, Markdown, and HuJSON (via `.prettierrc.json` with `jsonc` parser)
 - `treefmt.nix` `includes = [ "*.hujson" ]` adds HuJSON to prettier; config files must be git-tracked for Nix sandbox
 - `.markdownlint.jsonc` extends `markdownlint/style/prettier` to avoid conflicts
+
+## Code Style
+
+- Order attributes light-to-heavy: one-liners first, blocks last ("b shape")
+- nixfmt handles whitespace only — attribute ordering is a manual convention
 
 ## Firewall
 
@@ -106,7 +112,7 @@ nix flake check
 ## Verification
 
 - Compare system derivations before/after refactoring: `nix eval --raw .#nixosConfigurations.server.config.system.build.toplevel`
-- If output paths match, the NixOS config is byte-identical
+- If output paths match, the NixOS config is byte-identical; if paths differ, use `nix store diff-closures <before> <after>` to check for actual package differences
 
 ## Installer Pitfalls
 
