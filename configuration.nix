@@ -10,6 +10,20 @@ let
   inherit (import ./vars.nix) vars;
   fqdn = "${vars.hostname}.${vars.tailnet}";
   syncthingGuiPort = lib.toInt (lib.last (lib.splitString ":" config.services.syncthing.guiAddress));
+  sambaHardening = {
+    ProtectSystem = "full";
+    ProtectHome = true;
+    ProtectKernelTunables = true;
+    ProtectKernelModules = true;
+    ProtectKernelLogs = true;
+    ProtectControlGroups = true;
+    ProtectClock = true;
+    ProtectHostname = true;
+    RestrictRealtime = true;
+    RestrictSUIDSGID = true;
+    NoNewPrivileges = true;
+    LockPersonality = true;
+  };
 in
 {
   imports = [
@@ -19,11 +33,6 @@ in
   ];
 
   system.stateVersion = "24.11";
-
-  boot.tmp = {
-    useTmpfs = true;
-    tmpfsSize = "256M";
-  };
 
   systemd = {
     services.dotfiles-checkout = {
@@ -35,6 +44,29 @@ in
         Type = "oneshot";
         User = vars.user;
         Group = "users";
+        # https://wiki.nixos.org/wiki/Systemd_Hardening
+        ProtectSystem = "strict";
+        ReadWritePaths = [ "/home/${vars.user}" ];
+        ProtectKernelTunables = true;
+        ProtectKernelModules = true;
+        ProtectKernelLogs = true;
+        ProtectControlGroups = true;
+        ProtectClock = true;
+        ProtectHostname = true;
+        PrivateDevices = true;
+        PrivateTmp = true;
+        NoNewPrivileges = true;
+        LockPersonality = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        RestrictNamespaces = true;
+        RestrictAddressFamilies = [
+          "AF_UNIX"
+          "AF_INET"
+          "AF_INET6"
+        ];
+        SystemCallArchitectures = "native";
+        CapabilityBoundingSet = "";
       };
       path = with pkgs; [
         git
@@ -55,9 +87,89 @@ in
         options = "mode=1777,nosuid,nodev,size=256M";
       }
     ];
+
+    services = {
+      # https://wiki.nixos.org/wiki/Systemd_Hardening
+      # https://man7.org/linux/man-pages/man5/systemd.exec.5.html
+      # sandbox caddy: only needs network + its state dir + tailscale socket (read-only)
+      caddy.serviceConfig = {
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        ProtectKernelTunables = true;
+        ProtectKernelModules = true;
+        ProtectKernelLogs = true;
+        ProtectControlGroups = true;
+        ProtectClock = true;
+        ProtectHostname = true;
+        ProtectProc = "invisible";
+        ProcSubset = "pid";
+        LockPersonality = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        RestrictNamespaces = true;
+        SystemCallArchitectures = "native";
+        MemoryDenyWriteExecute = true;
+        NoNewPrivileges = true;
+        ReadWritePaths = [ "/var/lib/caddy" ];
+      };
+
+      # https://wiki.nixos.org/wiki/Systemd_Hardening
+      # sandbox samba: runs as root for auth but doesn't need kernel/hw access
+      samba-smbd.serviceConfig = sambaHardening;
+      samba-nmbd.serviceConfig = sambaHardening;
+    };
   };
 
   boot = {
+    tmp = {
+      useTmpfs = true;
+      tmpfsSize = "256M";
+    };
+    # https://madaidans-insecurities.github.io/guides/linux-hardening.html#kernel-modules
+    # prevent loading unused network protocols and filesystems (common local exploit targets)
+    extraModprobeConfig = ''
+      install dccp /bin/false
+      install sctp /bin/false
+      install rds /bin/false
+      install tipc /bin/false
+      install cramfs /bin/false
+      install freevxfs /bin/false
+      install hfs /bin/false
+      install hfsplus /bin/false
+      install jffs2 /bin/false
+      install udf /bin/false
+    '';
+    kernel.sysctl = {
+      # https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt
+      # don't send ICMP redirects — Tailscale subnet routing enables IP forwarding,
+      # but LAN hosts should use their own gateway, not be redirected through us
+      "net.ipv4.conf.all.send_redirects" = 0;
+      "net.ipv4.conf.default.send_redirects" = 0;
+      # ignore ICMP redirects to prevent MITM route table poisoning
+      # (ipv4 .all already 0 via NixOS firewall)
+      "net.ipv4.conf.default.accept_redirects" = 0;
+      "net.ipv6.conf.all.accept_redirects" = 0;
+      "net.ipv6.conf.default.accept_redirects" = 0;
+      # log packets with impossible source addresses for forensic investigation
+      "net.ipv4.conf.all.log_martians" = 1;
+      "net.ipv4.conf.default.log_martians" = 1;
+
+      # https://www.kernel.org/doc/Documentation/admin-guide/sysctl/kernel.rst
+      # hide kernel pointers from /proc even for root — mitigates info leaks for local exploits
+      "kernel.kptr_restrict" = 2;
+      # https://www.kernel.org/doc/Documentation/admin-guide/LSM/Yama.rst
+      # restrict ptrace to parent→child only — blocks debugger-based privilege escalation
+      "kernel.yama.ptrace_scope" = 1;
+      # https://www.kernel.org/doc/Documentation/admin-guide/sysctl/kernel.rst
+      # prevent unprivileged users from loading BPF programs (local privesc vector)
+      "kernel.unprivileged_bpf_disabled" = 1;
+      # https://www.kernel.org/doc/Documentation/admin-guide/sysctl/net.rst
+      # harden BPF JIT for all users to prevent JIT spraying attacks
+      "net.core.bpf_jit_harden" = 2;
+      # https://www.kernel.org/doc/Documentation/admin-guide/sysrq.rst
+      # allow only sync (16) + remount-ro (32) + reboot (128) for emergency recovery
+      "kernel.sysrq" = 176;
+    };
     loader = {
       systemd-boot.enable = lib.mkForce false;
       efi.canTouchEfiVariables = lib.mkDefault true;
@@ -156,14 +268,24 @@ in
       "nix-command"
       "flakes"
     ];
+    # https://xeiaso.net/blog/paranoid-nixos-2021-07-18/
+    # prevent service accounts from accessing compilers and scripting languages via nix
+    allowed-users = [ "@wheel" ];
     auto-optimise-store = true;
   };
 
-  environment.systemPackages = with pkgs; [
-    sbctl
-    git
-    neovim
-  ];
+  environment = {
+    # https://xeiaso.net/blog/paranoid-nixos-2021-07-18/
+    # replace default packages (nano, perl, rsync, strace) with explicit list
+    defaultPackages = lib.mkForce [ ];
+
+    systemPackages = with pkgs; [
+      sbctl
+      git
+      nano
+      neovim
+    ];
+  };
 
   services = {
     tailscale = {
@@ -222,26 +344,52 @@ in
       openFirewall = true;
     };
 
+    # https://www.samba.org/samba/docs/current/man-html/winbindd.8.html
+    # winbindd maps Windows NT/AD users and groups to Unix — not needed with local-only auth
+    samba.winbindd.enable = false;
+
     btrfs.autoScrub.enable = true;
 
     openssh = {
       enable = true;
+      # https://man.openbsd.org/ssh-keygen#DESCRIPTION
+      # ed25519 only — smaller keys, faster, no known structural weaknesses
       hostKeys = [
         {
           path = "/persist/etc/ssh/ssh_host_ed25519_key";
           type = "ed25519";
         }
-        {
-          path = "/persist/etc/ssh/ssh_host_rsa_key";
-          type = "rsa";
-          bits = 4096;
-        }
       ];
       settings = {
         PermitRootLogin = "no";
         PasswordAuthentication = false;
+        # https://xeiaso.net/blog/paranoid-nixos-2021-07-18/
+        # https://man.openbsd.org/sshd_config
+        # prevent a compromised session from being used as a network tunnel
+        AllowTcpForwarding = false;
+        AllowAgentForwarding = false;
+        AllowStreamLocalForwarding = false;
+        # https://man.openbsd.org/sshd_config#ClientAliveInterval
+        # drop idle sessions after ~10 min (interval × countMax); does not affect initrd SSH
+        ClientAliveInterval = 300;
+        ClientAliveCountMax = 2;
       };
     };
+  };
+
+  security = {
+    # https://xeiaso.net/blog/paranoid-nixos-2021-07-18/
+    # https://man7.org/linux/man-pages/man8/auditd.8.html
+    # log every program execution for intrusion detection
+    auditd.enable = true;
+    audit = {
+      enable = true;
+      rules = [ "-a exit,always -F arch=b64 -S execve" ];
+    };
+
+    # https://xeiaso.net/blog/paranoid-nixos-2021-07-18/
+    # only wheel users can execute the sudo binary, not just use it
+    sudo.execWheelOnly = true;
   };
 
   users.mutableUsers = false;
