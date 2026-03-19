@@ -1,7 +1,4 @@
-{
-  config,
-  ...
-}:
+_:
 
 let
   inherit (import ./vars.nix) vars;

@@ -59,6 +59,10 @@
             package = self.formatter.x86_64-linux;
           };
           statix.enable = true;
+          nil = {
+            enable = true;
+            settings.denyWarnings = true;
+          };
           markdownlint.enable = true;
         };
       };
