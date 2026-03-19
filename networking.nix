@@ -25,10 +25,20 @@ in
     };
     firewall = {
       trustedInterfaces = [ "tailscale0" ];
-      allowedTCPPorts = [
-        config.services.home-assistant.config.http.server_port
-        syncthingGuiPort
-      ];
+      # restrict service ports to physical LAN only
+      interfaces.${vars.net.interface} = {
+        allowedTCPPorts = [
+          config.services.home-assistant.config.http.server_port
+          syncthingGuiPort
+          139
+          445
+        ];
+        allowedUDPPorts = [
+          137
+          138
+          3702
+        ];
+      };
     };
   };
 

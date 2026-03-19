@@ -46,11 +46,19 @@ nix flake check
 
 - Home Assistant in `home-assistant.nix`, port 8123, config managed declaratively; `.storage/` holds runtime state in /var/lib/hass
 - Caddy reverse proxy with Tailscale auto-TLS; HA at `https://prodesk.tail87795f.ts.net`; cert cache in /var/lib/caddy (persisted)
-- Syncthing GUI on 0.0.0.0:8384 (LAN + Tailscale via firewall); config in ~/.config/syncthing (persisted), data in ~/Documents
+- Syncthing GUI on 0.0.0.0:8384 (LAN-only firewall + Tailscale via trustedInterfaces); config in ~/.config/syncthing (persisted), data in ~/Documents
 - Tailscale subnet router (192.168.1.0/24) + exit node; `useRoutingFeatures = "server"`; firewall trusts tailscale0
 - ESPHome garden device (esp-garden) at 192.168.1.132 — config entry + noise PSK in .storage
-- Samba share at `/share` (btrfs subvol), SMB3 encrypted, LAN-only (`hosts allow = 192.168.1.`); samba-wsdd for Windows discovery
+- Samba share at `/share` (btrfs subvol), SMB3 encrypted, LAN-only (firewall + `hosts allow = 192.168.1.`); samba-wsdd for Windows discovery
 - Samba user passwords managed via `smbpasswd -a <user>`; state in /var/lib/samba (persisted); `hosts allow` uses trailing-dot subnet syntax, not CIDR
+
+## Module Structure
+
+- `configuration.nix` — core system: boot, initrd, impermanence, users, dotfiles, openssh, nix settings
+- `networking.nix` — networking, firewall, Tailscale, Caddy (+ its systemd hardening), Syncthing
+- `samba.nix` — Samba, samba-wsdd, smbd/nmbd systemd hardening
+- `hardening.nix` — kernel sysctls, module blacklist, audit, sudo, nix access control
+- `home-assistant.nix` — Home Assistant config, lovelace dashboard
 
 ## SSH Hosts
 
@@ -70,6 +78,12 @@ nix flake check
 - `treefmt.nix` `includes = [ "*.hujson" ]` adds HuJSON to prettier; config files must be git-tracked for Nix sandbox
 - `.markdownlint.jsonc` extends `markdownlint/style/prettier` to avoid conflicts
 
+## Firewall
+
+- `trustedInterfaces = ["tailscale0"]` accepts ALL traffic on Tailscale — port rules only affect the physical LAN
+- Service ports (HA, Syncthing, Samba, wsdd) use interface-specific rules on `enp1s0`, not global `allowedTCPPorts`
+- Samba/wsdd use manual firewall rules (not `openFirewall`) to restrict to LAN interface
+
 ## Tailscale Gotchas
 
 - `permitCertUid = "caddy"` required for Caddy to fetch Tailscale TLS certs
@@ -85,7 +99,14 @@ nix flake check
 - `nixos-rebuild-ng` (NixOS 25.11) wraps all remote `--sudo` commands through `sudo /bin/sh -c` — command-specific NOPASSWD sudoers rules don't work; use `--ask-sudo-password` instead
 - `--ask-sudo-password` requires interactive terminal — Claude Code cannot run rebuilds
 - statix enforces merging repeated attrset keys (e.g., multiple `systemd.*` blocks must be combined)
+- nil pre-commit hook has `denyWarnings = true` — unused bindings and other warnings fail the check
+- Modules that take no args use `_:` not `{ ... }:` (statix enforces this)
 - Server has no `rsync`/`parted`/`sgdisk` — use `nix-shell -p <pkg>` or `nix run` for one-off tools
+
+## Verification
+
+- Compare system derivations before/after refactoring: `nix eval --raw .#nixosConfigurations.server.config.system.build.toplevel`
+- If output paths match, the NixOS config is byte-identical
 
 ## Installer Pitfalls
 

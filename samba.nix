@@ -21,7 +21,6 @@ in
   services = {
     samba = {
       enable = true;
-      openFirewall = true;
       # https://www.samba.org/samba/docs/current/man-html/winbindd.8.html
       # winbindd maps Windows NT/AD users and groups to Unix — not needed with local-only auth
       winbindd.enable = false;
@@ -48,7 +47,6 @@ in
 
     samba-wsdd = {
       enable = true;
-      openFirewall = true;
     };
   };
 
