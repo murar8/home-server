@@ -58,6 +58,7 @@ in
 
     persistence."/persist" = {
       hideMounts = true;
+      users.${vars.user}.files = [ ".bash_history" ];
       directories = [
         "/etc/secureboot"
         "/var/lib/nixos"

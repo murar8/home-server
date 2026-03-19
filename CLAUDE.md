@@ -60,6 +60,12 @@ nix flake check
 - `samba.nix` — Samba, samba-wsdd, firewall ports, /share tmpfiles, samba persistence, smbd/nmbd hardening
 - `hardening.nix` — kernel sysctls, module blacklist, audit, sudo, nix access control
 - `home-assistant.nix` — Home Assistant config, lovelace dashboard, HA firewall port, hass persistence
+- `vars.nix` — shared variables (hostname, user, network config, tailnet, SSH key)
+- `lovelace.nix` — Home Assistant dashboard layout (imported by home-assistant.nix)
+- `disk-config.nix` — disko partitioning (GPT, LUKS, btrfs subvolumes)
+- `hardware-configuration.nix` — hardware-specific kernel modules and platform
+- `flake.nix` — flake inputs, NixOS system config, formatter, dev shell, git-hooks
+- `treefmt.nix` — treefmt formatter config (nixfmt, prettier, shellcheck, shfmt)
 
 ## SSH Hosts
 
@@ -82,6 +88,7 @@ nix flake check
 ## Code Style
 
 - Order attributes light-to-heavy: one-liners first, blocks last ("b shape")
+- nixfmt `--strict` mode enabled — formatting is fully deterministic regardless of input
 - nixfmt handles whitespace only — attribute ordering is a manual convention
 
 ## Firewall
