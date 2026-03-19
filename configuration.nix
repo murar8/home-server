@@ -20,9 +20,14 @@ in
 
   system.stateVersion = "24.11";
 
-  programs.bash.loginShellInit = ''
-    [ -f ~/.bashrc ] && . ~/.bashrc
-  '';
+  programs.bash = {
+    loginShellInit = ''
+      [ -f ~/.bashrc ] && . ~/.bashrc
+    '';
+    interactiveShellInit = ''
+      HISTFILE="/persist/home/$USER/.bash_history"
+    '';
+  };
 
   users.mutableUsers = false;
 
@@ -58,7 +63,6 @@ in
 
     persistence."/persist" = {
       hideMounts = true;
-      users.${vars.user}.files = [ ".bash_history" ];
       directories = [
         "/etc/secureboot"
         "/var/lib/nixos"
