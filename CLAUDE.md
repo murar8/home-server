@@ -43,6 +43,7 @@ nix flake check
 
 ## Services
 
+- Auto-upgrade via `system.autoUpgrade` in `configuration.nix` — daily ~04:00, pulls from `github:murar8/home-server#server` with `--recreate-lock-file --no-write-lock-file` (fresh nixpkgs, non-reproducible tradeoff accepted)
 - Home Assistant in `home-assistant.nix`, port 8123, config managed declaratively; `.storage/` holds runtime state in /var/lib/hass
 - Caddy reverse proxy with Tailscale auto-TLS; HA at `https://prodesk.tail87795f.ts.net`; cert cache in /var/lib/caddy (persisted)
 - Syncthing GUI on 0.0.0.0:8384 (LAN-only firewall + Tailscale via trustedInterfaces); config in ~/.config/syncthing (persisted), data in ~/Documents
