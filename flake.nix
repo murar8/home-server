@@ -1,6 +1,7 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
     dotfiles = {
       url = "github:murar8/dotfiles";
       flake = false;
@@ -27,6 +28,7 @@
     {
       self,
       nixpkgs,
+      neovim-nightly-overlay,
       disko,
       lanzaboote,
       dotfiles,
@@ -41,6 +43,7 @@
         modules = [
           disko.nixosModules.disko
           lanzaboote.nixosModules.lanzaboote
+          { nixpkgs.overlays = [ neovim-nightly-overlay.overlays.default ]; }
           ./configuration.nix
         ];
       };

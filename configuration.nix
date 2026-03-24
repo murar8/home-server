@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   dotfiles,
@@ -70,6 +71,7 @@
   boot = {
     initrd.systemd.enable = true;
     loader = {
+      timeout = 1;
       systemd-boot.enable = lib.mkForce false;
       efi.canTouchEfiVariables = true;
     };
@@ -100,6 +102,8 @@
     };
     desktopManager.gnome.enable = true;
     gnome.core-apps.enable = false;
+
+    fprintd.enable = true;
 
     printing.enable = true;
 
@@ -146,6 +150,37 @@
     fwupd.enable = true;
   };
 
+  programs.dconf.profiles.user.databases = [
+    {
+      lockAll = true;
+      keyfiles = [ ./dconf ];
+    }
+  ];
+
+  # https://github.com/NixOS/nixpkgs/issues/171136
+  # https://wiki.nixos.org/wiki/Fingerprint_scanner
+  # fprintd disables password login in GDM without this workaround
+  security.pam.services.login.fprintAuth = false;
+  security.pam.services.gdm-fingerprint = lib.mkIf config.services.fprintd.enable {
+    text = ''
+      auth       required                    pam_shells.so
+      auth       requisite                   pam_nologin.so
+      auth       requisite                   pam_faillock.so      preauth
+      auth       required                    ${pkgs.fprintd}/lib/security/pam_fprintd.so
+      auth       optional                    pam_permit.so
+      auth       required                    pam_env.so
+      auth       [success=ok default=1]      ${pkgs.gdm}/lib/security/pam_gdm.so
+      auth       optional                    ${pkgs.gnome-keyring}/lib/security/pam_gnome_keyring.so
+
+      account    include                     login
+
+      password   required                    pam_deny.so
+
+      session    include                     login
+      session    optional                    ${pkgs.gnome-keyring}/lib/security/pam_gnome_keyring.so auto_start
+    '';
+  };
+
   virtualisation.docker.enable = true;
 
   programs.bash.loginShellInit = ''
@@ -164,6 +199,11 @@
     ghostty
     neovim
     nano
+    gcc
+    tree-sitter
+    nodejs
+    unzip
+    python3
 
     # system
     sbctl
@@ -172,6 +212,7 @@
     git
     delta
     lazygit
+    lazydocker
     ripgrep
     fd
     fzf
@@ -186,6 +227,24 @@
 
     # utilities
     bitwarden-desktop
+    seahorse
+    gnomeExtensions.alphabetical-app-grid
+    gnomeExtensions.appindicator
+    gnomeExtensions.bing-wallpaper
+    gnomeExtensions.caffeine
+    gnomeExtensions.clipboard-indicator
+    gnomeExtensions.dash-to-dock
+    gnomeExtensions.easy-docker-containers
+    gnomeExtensions.focus-changer
+    gnomeExtensions.gsconnect
+    gnomeExtensions.junk-notification-cleaner
+    gnomeExtensions.legacy-gtk3-theme-scheme-auto-switcher
+    gnomeExtensions.space-bar
+    gnomeExtensions.syncthing-indicator
+    gnomeExtensions.syncthing-toggle
+    gnomeExtensions.tailscale-status
+    gnomeExtensions.tiling-assistant
+    gnomeExtensions.vitals
     scrcpy
 
     # cloud & devops
