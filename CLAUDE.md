@@ -3,11 +3,16 @@
 NixOS configurations for ThinkPad L15 Gen 2a
 (AMD Ryzen 5 PRO 5650U, 512GB NVMe) and Debian desktop (planned).
 
+## Claude Code Notes
+
+- `pkexec` does not work for `nixos-rebuild` — use `--sudo` flag instead
+  (pkexec changes cwd to /root and root can't access user's git repo)
+
 ## Commands
 
 ```sh
-# Build locally
-nixos-rebuild switch --flake .#thinkpad
+# Build locally (needs interactive terminal for sudo password — use `!` prefix in Claude Code)
+nixos-rebuild switch --flake .#thinkpad --sudo
 
 # Rebuild remotely from Debian desktop (needs interactive sudo)
 nix run nixpkgs#nixos-rebuild -- switch --flake .#thinkpad \

@@ -194,6 +194,11 @@
 
   virtualisation.docker.enable = true;
 
+  environment.sessionVariables = {
+    PATH = [ "$HOME/.local/bin" ];
+    SSH_AUTH_SOCK = "$HOME/.bitwarden-ssh-agent.sock";
+  };
+
   environment.systemPackages = with pkgs; [
     # browsers
     # firefox
@@ -217,6 +222,7 @@
 
     # cli tools
     git
+    gh
     delta
     lazygit
     lazydocker
