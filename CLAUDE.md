@@ -77,6 +77,9 @@ nix flake check
   formatter, dev shell, git-hooks
 - `treefmt.nix` — treefmt formatter config
   (nixfmt, shellcheck, shfmt)
+- `dconf/user.ini` — GNOME dconf keyfile (settings,
+  keybindings, extension configs); loaded via
+  `programs.dconf.profiles.user.databases[].keyfiles`
 
 ## Code Style
 
@@ -88,6 +91,19 @@ nix flake check
   is a manual convention
 - Modules that take no args use `_:` not `{ ... }:`
   (statix enforces this)
+
+## GNOME / dconf
+
+- dconf keyfile format (INI) avoids translating GVariant
+  types to Nix — use `dconf dump /` to export, edit file
+- `lockAll = true` forces system defaults over user
+  dconf db — required for settings to actually apply
+- GNOME extensions must be both in `systemPackages` AND
+  in `enabled-extensions` in the dconf keyfile
+- Extensions need logout/login after rebuild to appear
+- `@as []` is dconf syntax for empty string array
+- Debian desktop settings reference:
+  `~/.local/bin/reset-keybindings`
 
 ## Nix Gotchas
 
@@ -103,6 +119,11 @@ nix flake check
 - Installer tmpfs may be too small for flake eval — use
   standalone `disko --mode destroy,format,mount` or
   `mount -o remount,size=4G /run`
+- Downloaded binaries (Claude Code, etc.) need
+  `programs.nix-ld.enable` + `services.envfs.enable`
+  for FHS dynamic linking and /bin/* paths
+- GNOME extensions may expect FHS paths like `/bin/ps`
+  — envfs resolves these from system PATH
 
 ## Verification
 
@@ -117,6 +138,8 @@ nix flake check
 
 - Home server config at `github:murar8/home-server`
   (or `../home-server/` locally)
+- Debian desktop: `debian` (192.168.1.60)
+- ThinkPad: `thinkpad` (192.168.1.141)
 - Server hostname: `prodesk` (192.168.1.130)
 - Tailscale subnet routing captures LAN traffic to
   192.168.1.130 — disconnect TS for Samba access

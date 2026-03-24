@@ -137,25 +137,36 @@
       };
     };
 
-    tailscale.enable = true;
+    tailscale = {
+      enable = true;
+      extraSetFlags = [ "--operator=murar8" ];
+    };
 
     syncthing = {
       enable = true;
       user = "murar8";
       dataDir = "/home/murar8";
       openDefaultPorts = true;
+      systemService = false;
     };
 
     btrfs.autoScrub.enable = true;
+    envfs.enable = true;
     fwupd.enable = true;
   };
 
-  programs.dconf.profiles.user.databases = [
-    {
-      lockAll = true;
-      keyfiles = [ ./dconf ];
-    }
-  ];
+  programs = {
+    nix-ld.enable = true;
+    bash.loginShellInit = ''
+      [ -f ~/.bashrc ] && . ~/.bashrc
+    '';
+    dconf.profiles.user.databases = [
+      {
+        lockAll = true;
+        keyfiles = [ ./dconf ];
+      }
+    ];
+  };
 
   # https://github.com/NixOS/nixpkgs/issues/171136
   # https://wiki.nixos.org/wiki/Fingerprint_scanner
@@ -182,10 +193,6 @@
   };
 
   virtualisation.docker.enable = true;
-
-  programs.bash.loginShellInit = ''
-    [ -f ~/.bashrc ] && . ~/.bashrc
-  '';
 
   environment.systemPackages = with pkgs; [
     # browsers
@@ -230,6 +237,7 @@
     seahorse
     gnomeExtensions.alphabetical-app-grid
     gnomeExtensions.appindicator
+    gnomeExtensions.auto-power-profile
     gnomeExtensions.bing-wallpaper
     gnomeExtensions.caffeine
     gnomeExtensions.clipboard-indicator
@@ -240,7 +248,6 @@
     gnomeExtensions.junk-notification-cleaner
     gnomeExtensions.legacy-gtk3-theme-scheme-auto-switcher
     gnomeExtensions.space-bar
-    gnomeExtensions.syncthing-indicator
     gnomeExtensions.syncthing-toggle
     gnomeExtensions.tailscale-status
     gnomeExtensions.tiling-assistant
