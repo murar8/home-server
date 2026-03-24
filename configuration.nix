@@ -41,6 +41,10 @@
 
   users.users.murar8 = {
     isNormalUser = true;
+    initialHashedPassword = "$6$U//rqA7xCeod5xl5$/JSOS7xH1gMOJcP8zJmom7dnnDdPyPu1UWY2qFE/UEaUP5vpEPxbfPXJL2e8ws6WSG4GKwlbHu5rs4Wa1.hoK0";
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKCfqnufJrf3pZxXvFcqbB1vUhyc0EFuDBuUEO7Q0Luq lnzmrr@gmail.com"
+    ];
     extraGroups = [
       "wheel"
       "networkmanager"
@@ -71,6 +75,8 @@
     lanzaboote = {
       enable = true;
       pkiBundle = "/var/lib/sbctl";
+      autoGenerateKeys.enable = true;
+      autoEnrollKeys.enable = true;
     };
     tmp.useTmpfs = true;
   };
@@ -81,9 +87,15 @@
   };
 
   services = {
-    displayManager.gdm = {
-      enable = true;
-      wayland = true;
+    displayManager = {
+      gdm = {
+        enable = true;
+        wayland = true;
+      };
+      autoLogin = {
+        enable = true;
+        user = "murar8";
+      };
     };
     desktopManager.gnome.enable = true;
     gnome.core-apps.enable = false;
@@ -141,11 +153,10 @@
 
   environment.systemPackages = with pkgs; [
     # browsers
-    firefox
+    # firefox
     google-chrome
 
     # communication
-    thunderbird
     discord
 
     # terminals & editors
@@ -170,19 +181,19 @@
     direnv
 
     # media
-    vlc
+    # vlc
 
     # utilities
     bitwarden-desktop
     scrcpy
 
     # cloud & devops
-    terraform
-    kubectl
-    mongosh
+    # terraform
+    # kubectl
+    # mongosh
 
     # security
-    tor-browser
+    # tor-browser
   ];
 
   systemd.services.dotfiles-checkout = {

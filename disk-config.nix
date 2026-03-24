@@ -21,7 +21,10 @@ _: {
             type = "luks";
             name = "cryptroot";
             passwordFile = "/tmp/luks-pass";
-            settings.allowDiscards = true;
+            settings = {
+              allowDiscards = true;
+              crypttabExtraOpts = [ "tpm2-device=auto" ];
+            };
             content = {
               type = "btrfs";
               extraArgs = [
