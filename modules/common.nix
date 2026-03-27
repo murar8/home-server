@@ -1,5 +1,4 @@
 {
-  config,
   lib,
   pkgs,
   dotfiles,
@@ -7,19 +6,11 @@
 }:
 
 {
-  imports = [
-    ./hardware-configuration.nix
-    ./disk-config.nix
-  ];
-
   nixpkgs.config.allowUnfree = true;
 
-  system.stateVersion = "25.11";
+  networking.networkmanager.enable = true;
 
-  networking = {
-    hostName = "thinkpad";
-    networkmanager.enable = true;
-  };
+  system.stateVersion = "25.11";
 
   time.timeZone = "Europe/Madrid";
 
@@ -103,8 +94,6 @@
     desktopManager.gnome.enable = true;
     gnome.core-apps.enable = false;
 
-    fprintd.enable = true;
-
     printing.enable = true;
 
     pipewire = {
@@ -153,7 +142,10 @@
     btrfs.autoScrub.enable = true;
     envfs.enable = true;
     fwupd.enable = true;
+    gvfs.enable = true;
   };
+
+  virtualisation.docker.enable = true;
 
   programs = {
     nix-ld.enable = true;
@@ -163,88 +155,64 @@
     dconf.profiles.user.databases = [
       {
         lockAll = true;
-        keyfiles = [ ./dconf ];
+        keyfiles = [ ../dconf ];
       }
     ];
   };
 
-  # https://github.com/NixOS/nixpkgs/issues/171136
-  # https://wiki.nixos.org/wiki/Fingerprint_scanner
-  # fprintd disables password login in GDM without this workaround
-  security.pam.services.login.fprintAuth = false;
-  security.pam.services.gdm-fingerprint = lib.mkIf config.services.fprintd.enable {
-    text = ''
-      auth       required                    pam_shells.so
-      auth       requisite                   pam_nologin.so
-      auth       requisite                   pam_faillock.so      preauth
-      auth       required                    ${pkgs.fprintd}/lib/security/pam_fprintd.so
-      auth       optional                    pam_permit.so
-      auth       required                    pam_env.so
-      auth       [success=ok default=1]      ${pkgs.gdm}/lib/security/pam_gdm.so
-      auth       optional                    ${pkgs.gnome-keyring}/lib/security/pam_gnome_keyring.so
-
-      account    include                     login
-
-      password   required                    pam_deny.so
-
-      session    include                     login
-      session    optional                    ${pkgs.gnome-keyring}/lib/security/pam_gnome_keyring.so auto_start
-    '';
-  };
-
-  virtualisation.docker.enable = true;
-
   environment.sessionVariables = {
+    GTK_THEME = "Adwaita:dark";
     PATH = [ "$HOME/.local/bin" ];
     SSH_AUTH_SOCK = "$HOME/.bitwarden-ssh-agent.sock";
   };
 
   environment.systemPackages = with pkgs; [
     # browsers
-    # firefox
     google-chrome
 
     # communication
     discord
+    slack
 
     # terminals & editors
-    ghostty
-    neovim
-    nano
     gcc
-    tree-sitter
+    ghostty
+    nano
+    neovim
     nodejs
-    unzip
     python3
-
-    # system
-    sbctl
+    tree-sitter
+    unzip
 
     # cli tools
-    git
-    gh
+    curl
     delta
-    lazygit
-    lazydocker
-    ripgrep
+    direnv
     fd
     fzf
+    gh
+    git
     jq
-    curl
-    wget
+    lazydocker
+    lazygit
+    ripgrep
     rsync
-    direnv
+    wget
 
-    # media
-    # vlc
+    # system
+    nautilus
+    sbctl
+    seahorse
 
     # utilities
+    bitwarden-cli
     bitwarden-desktop
-    seahorse
+    scrcpy
+
+    # gnome extensions
     gnomeExtensions.alphabetical-app-grid
     gnomeExtensions.appindicator
     gnomeExtensions.auto-power-profile
-    gnomeExtensions.bing-wallpaper
     gnomeExtensions.caffeine
     gnomeExtensions.clipboard-indicator
     gnomeExtensions.dash-to-dock
@@ -253,20 +221,12 @@
     gnomeExtensions.gsconnect
     gnomeExtensions.junk-notification-cleaner
     gnomeExtensions.legacy-gtk3-theme-scheme-auto-switcher
+    gnomeExtensions.picture-of-the-day
     gnomeExtensions.space-bar
     gnomeExtensions.syncthing-toggle
     gnomeExtensions.tailscale-status
     gnomeExtensions.tiling-assistant
     gnomeExtensions.vitals
-    scrcpy
-
-    # cloud & devops
-    # terraform
-    # kubectl
-    # mongosh
-
-    # security
-    # tor-browser
   ];
 
   systemd.services.dotfiles-checkout = {

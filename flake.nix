@@ -44,7 +44,7 @@
           disko.nixosModules.disko
           lanzaboote.nixosModules.lanzaboote
           { nixpkgs.overlays = [ neovim-nightly-overlay.overlays.default ]; }
-          ./configuration.nix
+          ./hosts/thinkpad/configuration.nix
         ];
       };
 

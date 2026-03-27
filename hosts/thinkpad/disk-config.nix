@@ -23,7 +23,10 @@ _: {
             passwordFile = "/tmp/luks-pass";
             settings = {
               allowDiscards = true;
-              crypttabExtraOpts = [ "tpm2-device=auto" ];
+              crypttabExtraOpts = [
+                "tpm2-device=auto"
+                "tries=0"
+              ];
             };
             content = {
               type = "btrfs";
