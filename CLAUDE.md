@@ -1,12 +1,16 @@
 # NixOS Machines
 
 NixOS configurations for ThinkPad L15 Gen 2a
-(AMD Ryzen 5 PRO 5650U, 512GB NVMe) and Debian desktop (planned).
+(AMD Ryzen 5 PRO 5650U, 512GB NVMe) and Debian desktop
+(AMD Raphael/Granite Ridge, GTX 1070, Crucial P310 1TB).
 
 ## Claude Code Notes
 
 - `pkexec` does not work for `nixos-rebuild` — use `--sudo` flag instead
   (pkexec changes cwd to /root and root can't access user's git repo)
+- SSH keys are in Bitwarden agent (no files on disk) —
+  use `ssh-add -L | grep lnzmrr` to extract public key;
+  `ssh-copy-id` won't work, pipe to `authorized_keys` instead
 
 ## Commands
 
@@ -19,6 +23,12 @@ nix run nixpkgs#nixos-rebuild -- switch --flake .#thinkpad \
   --target-host murar8@192.168.1.141 \
   --build-host murar8@192.168.1.141 \
   --sudo --ask-sudo-password
+
+# Rebuild debian remotely from thinkpad (needs sudo password)
+nixos-rebuild switch --flake .#debian \
+  --target-host murar8@192.168.1.60 \
+  --build-host murar8@192.168.1.60 \
+  --ask-sudo-password
 
 # Format
 nix fmt
@@ -33,10 +43,20 @@ nix flake check
 
 ## Disk/Boot
 
-- LUKS + btrfs (subvols: @, @home, @nix, @log, @swap 8GB)
-  on NVMe (`nvme-WDC_PC_SN730_SDBQNTY-512G-1001_21385B802308`)
+- ThinkPad: LUKS + btrfs (subvols: @, @home, @nix, @log,
+  @swap 8GB) on NVMe
+  (`nvme-WDC_PC_SN730_SDBQNTY-512G-1001_21385B802308`)
+- Debian: ESP (p1, 953M) + LUKS+btrfs (p2, 679G, subvols:
+  @, @home, @nix, @log, @swap 16GB) + Windows NTFS (p4,
+  251.5G) on NVMe (`nvme-CT1000P310SSD8_25185001BB57`)
+- Debian initrd SSH unlock on port 2222 (static IP .60),
+  uses r8169 NIC driver in initrd
 - Secure Boot via lanzaboote v1.0.0
   (keys in /var/lib/sbctl, auto-generated + auto-enrolled)
+- Secure Boot enrollment: set BIOS to Custom Mode, clear all
+  keys to enter Setup Mode, boot NixOS — lanzaboote auto-enrolls
+- FQ0001 firmware quirk (execute on SB violation) is common
+  on consumer boards, not a blocker
 - TPM2 auto-unlock (PCR 7) with password fallback;
   systemd initrd required
 - No impermanence — persistent root
@@ -58,17 +78,38 @@ nix flake check
 
 ## Install / Deploy
 
-- Installed via nixos-anywhere:
+- nixos-anywhere supports non-root user with passwordless
+  sudo (e.g., `nixos` user on installer) — no root SSH needed
+- nixos-anywhere example:
   `nix run github:nix-community/nixos-anywhere --
-  --flake .#thinkpad --disk-encryption-keys /tmp/luks-pass
-  /tmp/luks-pass --target-host root@<ip>`
+  --flake .#debian --target-host nixos@<ip>`
+- Default phases: kexec,disko,install,reboot — use
+  `--phases install` to skip disko if already formatted
 - `--disk-encryption-keys` copies from LOCAL machine to
   target (not target-local)
-- nixos-anywhere needs root SSH on the target
 - `nix-copy-closure` fails with "lacks a signature" —
-  use `--build-host` to build on target instead
+  use `--build-host` to build on target instead;
+  remote rebuild must always use `--build-host`
 - `nixos-rebuild` not on Debian — use
   `nix run nixpkgs#nixos-rebuild`
+
+## Disko
+
+- disko `--mode destroy,format,mount` runs `disk-deactivate`
+  which `wipefs --all` on ALL partitions — use
+  `--mode format,mount` to preserve existing data
+- disko's `blkid TYPE` guard skips formatting partitions that
+  already have a filesystem; `cryptsetup isLuks` guard skips
+  existing LUKS — wipe header first if re-format is needed:
+  `dd if=/dev/zero of=/dev/<part> bs=1M count=4`
+- `sgdisk --new` fails on existing partitions; disko falls
+  back to renaming only — delete partitions first if layout
+  changes (sizes/count)
+- disko partition sizes must be integers (`694412M` not
+  `678.1G`) — use sector math to convert
+- `wipefs` only erases magic bytes, not data — NTFS can be
+  recovered by restoring the magic:
+  `echo -ne 'NTFS    ' | dd of=/dev/<part> bs=1 seek=3 count=8`
 
 ## Module Structure
 
@@ -82,6 +123,10 @@ nix flake check
   formatter, dev shell, git-hooks
 - `treefmt.nix` — treefmt formatter config
   (nixfmt, shellcheck, shfmt)
+- `modules/nvidia.nix` — reusable NVIDIA proprietary driver
+  module (GTX 1070 uses stable/580.x)
+- NetworkManager is per-host (thinkpad only) — debian uses
+  systemd-networkd static IP from initrd config
 - `dconf/user.ini` — GNOME dconf keyfile (settings,
   keybindings, extension configs); loaded via
   `programs.dconf.profiles.user.databases[].keyfiles`
@@ -129,6 +174,15 @@ nix flake check
   for FHS dynamic linking and /bin/* paths
 - GNOME extensions may expect FHS paths like `/bin/ps`
   — envfs resolves these from system PATH
+- `boot.initrd.systemd.network` config carries into booted
+  system via systemd-networkd — NM sees interface as
+  "connected externally" and won't manage it; set DNS via
+  `networking.nameservers` if using static IP
+- envfs + systemd initrd + fresh install = boot failure
+  ("Refusing to run, /usr is not populated") — systemd v257
+  made empty /usr fatal; fix: tmpfiles in initrd to pre-create
+  /sysroot/usr/bin and /sysroot/bin (nixpkgs#494001, not yet
+  in 25.11; workaround in common.nix)
 
 ## Verification
 

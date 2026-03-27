@@ -8,8 +8,6 @@
 {
   nixpkgs.config.allowUnfree = true;
 
-  networking.networkmanager.enable = true;
-
   system.stateVersion = "25.11";
 
   time.timeZone = "Europe/Madrid";
@@ -33,13 +31,11 @@
 
   users.users.murar8 = {
     isNormalUser = true;
-    initialHashedPassword = "$6$U//rqA7xCeod5xl5$/JSOS7xH1gMOJcP8zJmom7dnnDdPyPu1UWY2qFE/UEaUP5vpEPxbfPXJL2e8ws6WSG4GKwlbHu5rs4Wa1.hoK0";
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKCfqnufJrf3pZxXvFcqbB1vUhyc0EFuDBuUEO7Q0Luq lnzmrr@gmail.com"
     ];
     extraGroups = [
       "wheel"
-      "networkmanager"
       "docker"
     ];
   };
@@ -60,7 +56,22 @@
   };
 
   boot = {
-    initrd.systemd.enable = true;
+    initrd.systemd = {
+      enable = true;
+      # TODO: remove when nixpkgs#494001 is backported to nixos-25.11
+      tmpfiles.settings."50-envfs" = {
+        "/sysroot/usr/bin".d = {
+          group = "root";
+          mode = "0755";
+          user = "root";
+        };
+        "/sysroot/bin".d = {
+          group = "root";
+          mode = "0755";
+          user = "root";
+        };
+      };
+    };
     loader = {
       timeout = 1;
       systemd-boot.enable = lib.mkForce false;

@@ -8,5 +8,10 @@ _:
     ./disk-config.nix
   ];
 
-  networking.hostName = "thinkpad";
+  networking = {
+    hostName = "thinkpad";
+    networkmanager.enable = true;
+  };
+
+  users.users.murar8.extraGroups = [ "networkmanager" ];
 }

@@ -36,16 +36,24 @@
       git-hooks,
       ...
     }:
+    let
+      commonModules = [
+        disko.nixosModules.disko
+        lanzaboote.nixosModules.lanzaboote
+        { nixpkgs.overlays = [ neovim-nightly-overlay.overlays.default ]; }
+      ];
+    in
     {
       nixosConfigurations.thinkpad = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = { inherit dotfiles; };
-        modules = [
-          disko.nixosModules.disko
-          lanzaboote.nixosModules.lanzaboote
-          { nixpkgs.overlays = [ neovim-nightly-overlay.overlays.default ]; }
-          ./hosts/thinkpad/configuration.nix
-        ];
+        modules = commonModules ++ [ ./hosts/thinkpad/configuration.nix ];
+      };
+
+      nixosConfigurations.debian = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = { inherit dotfiles; };
+        modules = commonModules ++ [ ./hosts/debian/configuration.nix ];
       };
 
       formatter.x86_64-linux =
