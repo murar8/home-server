@@ -172,7 +172,6 @@
   };
 
   environment.sessionVariables = {
-    GTK_THEME = "Adwaita:dark";
     PATH = [ "$HOME/.local/bin" ];
     SSH_AUTH_SOCK = "$HOME/.bitwarden-ssh-agent.sock";
   };
@@ -231,7 +230,6 @@
     gnomeExtensions.focus-changer
     gnomeExtensions.gsconnect
     gnomeExtensions.junk-notification-cleaner
-    gnomeExtensions.legacy-gtk3-theme-scheme-auto-switcher
     gnomeExtensions.picture-of-the-day
     gnomeExtensions.space-bar
     gnomeExtensions.syncthing-toggle
