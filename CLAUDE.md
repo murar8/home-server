@@ -113,16 +113,31 @@ nix flake check
 
 ## Module Structure
 
-- `configuration.nix` — core system: boot, users,
-  dotfiles, services, packages
-- `disk-config.nix` — disko partitioning
+- `hosts/<name>/configuration.nix` — per-host system config
+  with module imports
+- `hosts/<name>/disk-config.nix` — disko partitioning
   (GPT, LUKS, btrfs subvolumes)
-- `hardware-configuration.nix` — generated on installer
+- `hosts/<name>/hardware-configuration.nix` — generated
   with `nixos-generate-config`
+- `modules/common.nix` — shared config: boot (lanzaboote),
+  users, SSH, Tailscale, Syncthing, Docker, dotfiles, keyd
+- `modules/gnome.nix` — GNOME + GDM, dconf profile,
+  extensions
+- `modules/fprintd.nix` — fingerprint auth (thinkpad only)
+- `modules/initrd-ssh.nix` — LUKS unlock via SSH in initrd
+  (debian only)
+- `modules/looking-glass.nix` — VM display via KVMFR
+- `modules/vfio-gpu.nix` — GPU passthrough for VMs
+- `modules/virt-manager.nix` — VM management tools
+- `vms/` — NixVirt libvirt domain definitions
+  (base.nix, windows11.nix, etc.)
 - `flake.nix` — flake inputs, NixOS system config,
   formatter, dev shell, git-hooks
 - `treefmt.nix` — treefmt formatter config
   (nixfmt, shellcheck, shfmt)
+- Debian imports: common, gnome, initrd-ssh, vfio-gpu,
+  looking-glass, virt-manager
+- ThinkPad imports: common, gnome, fprintd
 - NetworkManager is per-host (thinkpad only) — debian uses
   systemd-networkd with bridge (br0) for VM networking
 - `dconf/user.ini` — GNOME dconf keyfile (settings,
