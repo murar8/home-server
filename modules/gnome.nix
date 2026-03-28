@@ -17,6 +17,12 @@
     gvfs.enable = true;
   };
 
+  qt = {
+    enable = true;
+    platformTheme = "gnome";
+    style = "adwaita-dark";
+  };
+
   programs.dconf.profiles.user.databases = [
     {
       lockAll = true;
@@ -25,6 +31,7 @@
   ];
 
   environment.systemPackages = with pkgs; [
+    adw-gtk3
     nautilus
     seahorse
 
@@ -39,7 +46,7 @@
     gnomeExtensions.focus-changer
     gnomeExtensions.gsconnect
     gnomeExtensions.junk-notification-cleaner
-    gnomeExtensions.picture-of-the-day
+    gnomeExtensions.bing-wallpaper-changer
     gnomeExtensions.space-bar
     gnomeExtensions.syncthing-toggle
     gnomeExtensions.tailscale-status
