@@ -1,4 +1,4 @@
-_:
+{ pkgs, ... }:
 
 {
   imports = [
@@ -7,6 +7,10 @@ _:
     ./hardware-configuration.nix
     ./disk-config.nix
   ];
+
+  programs.gamemode.enable = true;
+
+  environment.systemPackages = [ (pkgs.heroic.override { extraPkgs = pkgs': [ pkgs'.gamemode ]; }) ];
 
   networking = {
     hostName = "debian";
