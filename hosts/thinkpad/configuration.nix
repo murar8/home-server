@@ -3,6 +3,7 @@ _:
 {
   imports = [
     ../../modules/common.nix
+    ../../modules/gnome.nix
     ../../modules/fprintd.nix
     ./hardware-configuration.nix
     ./disk-config.nix

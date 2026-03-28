@@ -7,6 +7,7 @@ in
   imports = [
     NixVirt.nixosModules.default
     ../../modules/common.nix
+    ../../modules/gnome.nix
     ../../modules/initrd-ssh.nix
     ../../modules/looking-glass.nix
     ../../modules/vfio-gpu.nix

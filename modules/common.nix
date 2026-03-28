@@ -95,19 +95,6 @@
   };
 
   services = {
-    displayManager = {
-      gdm = {
-        enable = true;
-        wayland = true;
-      };
-      autoLogin = {
-        enable = true;
-        user = "murar8";
-      };
-    };
-    desktopManager.gnome.enable = true;
-    gnome.core-apps.enable = false;
-
     printing.enable = true;
 
     pipewire = {
@@ -156,7 +143,6 @@
     btrfs.autoScrub.enable = true;
     envfs.enable = true;
     fwupd.enable = true;
-    gvfs.enable = true;
   };
 
   virtualisation.docker.enable = true;
@@ -166,12 +152,6 @@
     bash.loginShellInit = ''
       [ -f ~/.bashrc ] && . ~/.bashrc
     '';
-    dconf.profiles.user.databases = [
-      {
-        lockAll = true;
-        keyfiles = [ ../dconf ];
-      }
-    ];
   };
 
   environment.sessionVariables = {
@@ -217,34 +197,14 @@
     e2fsprogs
     htop
     lsof
-    nautilus
     pciutils
     sbctl
-    seahorse
     usbutils
 
     # utilities
     bitwarden-cli
     bitwarden-desktop
     scrcpy
-
-    # gnome extensions
-    gnomeExtensions.alphabetical-app-grid
-    gnomeExtensions.appindicator
-    gnomeExtensions.auto-power-profile
-    gnomeExtensions.caffeine
-    gnomeExtensions.clipboard-indicator
-    gnomeExtensions.dash-to-dock
-    gnomeExtensions.easy-docker-containers
-    gnomeExtensions.focus-changer
-    gnomeExtensions.gsconnect
-    gnomeExtensions.junk-notification-cleaner
-    gnomeExtensions.picture-of-the-day
-    gnomeExtensions.space-bar
-    gnomeExtensions.syncthing-toggle
-    gnomeExtensions.tailscale-status
-    gnomeExtensions.tiling-assistant
-    gnomeExtensions.vitals
   ];
 
   systemd.services.dotfiles-checkout = {
