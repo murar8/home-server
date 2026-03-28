@@ -19,10 +19,7 @@ in
   config = {
     virtualisation.libvirtd = {
       enable = true;
-      qemu = {
-        runAsRoot = false;
-        swtpm.enable = true;
-      };
+      qemu.runAsRoot = false;
     };
 
     programs.virt-manager.enable = true;

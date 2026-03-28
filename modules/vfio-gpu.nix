@@ -29,6 +29,8 @@
         "vfio"
         "vfio_iommu_type1"
       ];
+      # Ensure vfio-pci binds before xhci_pci claims USB controllers
+      extraModprobeConfig = "softdep xhci_pci pre: vfio-pci";
       # AMD-only; use intel_iommu=on for Intel hosts
       kernelParams = [
         "amd_iommu=on"

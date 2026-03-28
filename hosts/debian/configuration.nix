@@ -1,7 +1,11 @@
-{ pkgs, ... }:
+{ pkgs, NixVirt, ... }:
 
+let
+  vmXML = vm: NixVirt.lib.domain.writeXML (import vm NixVirt.lib.xml);
+in
 {
   imports = [
+    NixVirt.nixosModules.default
     ../../modules/common.nix
     ../../modules/initrd-ssh.nix
     ../../modules/looking-glass.nix
@@ -44,6 +48,21 @@
 
   # nocow on VM images dir — new files inherit +C (btrfs CoW-on-CoW avoidance)
   systemd.tmpfiles.rules = [ "h /var/lib/libvirt/images - - - - +C" ];
+
+  virtualisation.libvirt = {
+    enable = true;
+    swtpm.enable = true;
+    connections."qemu:///system".domains = [
+      {
+        definition = vmXML ../../vms/windows11.nix;
+        active = null;
+      }
+      {
+        definition = vmXML ../../vms/windows11-cracked.nix;
+        active = null;
+      }
+    ];
+  };
 
   modules = {
     looking-glass.kvmfrSizeMB = 256;

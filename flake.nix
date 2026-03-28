@@ -22,6 +22,10 @@
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    NixVirt = {
+      url = "https://flakehub.com/f/AshleyYakeley/NixVirt/*.tar.gz";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -31,6 +35,7 @@
       neovim-nightly-overlay,
       disko,
       lanzaboote,
+      NixVirt,
       dotfiles,
       treefmt-nix,
       git-hooks,
@@ -52,7 +57,7 @@
 
       nixosConfigurations.debian = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit dotfiles; };
+        specialArgs = { inherit dotfiles NixVirt; };
         modules = commonModules ++ [ ./hosts/debian/configuration.nix ];
       };
 
