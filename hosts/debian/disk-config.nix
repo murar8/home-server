@@ -64,6 +64,10 @@ _: {
                     "noatime"
                   ];
                 };
+                "@vms" = {
+                  mountpoint = "/var/lib/libvirt/images";
+                  mountOptions = [ "noatime" ];
+                };
                 "@swap" = {
                   mountpoint = "/swap";
                   swap.swapfile.size = "16G";

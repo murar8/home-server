@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   cfg = config.modules.virt-manager;
@@ -12,13 +17,26 @@ in
   };
 
   config = {
-    virtualisation.libvirtd.enable = true;
+    virtualisation.libvirtd = {
+      enable = true;
+      qemu = {
+        runAsRoot = false;
+        swtpm.enable = true;
+      };
+    };
 
     programs.virt-manager.enable = true;
 
-    users.users.${cfg.user}.extraGroups = [
-      "libvirtd"
-      "kvm"
-    ];
+    systemd.services.libvirtd.serviceConfig.LimitMEMLOCK = "infinity";
+
+    systemd.tmpfiles.rules = [ "L+ /var/lib/qemu/firmware - - - - ${pkgs.qemu}/share/qemu/firmware" ];
+
+    users.users = {
+      ${cfg.user}.extraGroups = [
+        "libvirtd"
+        "kvm"
+      ];
+      qemu-libvirtd.extraGroups = [ "kvm" ];
+    };
   };
 }

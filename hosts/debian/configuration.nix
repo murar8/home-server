@@ -1,9 +1,8 @@
-_:
+{ pkgs, ... }:
 
 {
   imports = [
     ../../modules/common.nix
-    ../../modules/gaming.nix
     ../../modules/initrd-ssh.nix
     ../../modules/looking-glass.nix
     ../../modules/vfio-gpu.nix
@@ -12,18 +11,46 @@ _:
     ./disk-config.nix
   ];
 
+  # TODO: revert to default when IOMMU group regression in 6.12.75+ is fixed (commit 7a126c1b6cfa)
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+
   networking = {
     hostName = "debian";
+    useNetworkd = true;
+    networkmanager.enable = false;
     nameservers = [
       "9.9.9.9"
       "149.112.112.112"
     ];
   };
 
+  systemd.network = {
+    netdevs."20-br0".netdevConfig = {
+      Name = "br0";
+      Kind = "bridge";
+    };
+    networks = {
+      "20-enp5s0" = {
+        matchConfig.Name = "enp5s0";
+        networkConfig.Bridge = "br0";
+      };
+      "20-br0" = {
+        matchConfig.Name = "br0";
+        address = [ "192.168.1.60/24" ];
+        gateway = [ "192.168.1.1" ];
+      };
+    };
+  };
+
+  # nocow on VM images dir — new files inherit +C (btrfs CoW-on-CoW avoidance)
+  systemd.tmpfiles.rules = [ "h /var/lib/libvirt/images - - - - +C" ];
+
   modules = {
+    looking-glass.kvmfrSizeMB = 256;
     vfio-gpu.pciIds = [
       "10de:1b81" # GTX 1070 GPU
       "10de:10f0" # GTX 1070 Audio
+      "1022:15b7" # USB controller (passthrough to VM)
     ];
     initrd-ssh = {
       interface = "enp5s0";

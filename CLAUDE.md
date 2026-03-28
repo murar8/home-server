@@ -123,10 +123,8 @@ nix flake check
   formatter, dev shell, git-hooks
 - `treefmt.nix` — treefmt formatter config
   (nixfmt, shellcheck, shfmt)
-- `modules/nvidia.nix` — reusable NVIDIA proprietary driver
-  module (GTX 1070 uses stable/580.x)
 - NetworkManager is per-host (thinkpad only) — debian uses
-  systemd-networkd static IP from initrd config
+  systemd-networkd with bridge (br0) for VM networking
 - `dconf/user.ini` — GNOME dconf keyfile (settings,
   keybindings, extension configs); loaded via
   `programs.dconf.profiles.user.databases[].keyfiles`

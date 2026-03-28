@@ -43,7 +43,8 @@
         "/dev/random", "/dev/urandom",
         "/dev/ptmx", "/dev/kvm",
         "/dev/rtc", "/dev/hpet",
-        "/dev/vfio/vfio", "/dev/kvmfr0"
+        "/dev/vfio/vfio", "/dev/vfio/0",
+        "/dev/kvmfr0"
       ]
     '';
 

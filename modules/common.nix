@@ -86,6 +86,8 @@
     tmp.useTmpfs = true;
   };
 
+  security.sudo.extraConfig = "Defaults timestamp_timeout=30";
+
   hardware = {
     enableRedistributableFirmware = true;
     bluetooth.enable = true;
@@ -208,12 +210,18 @@
     lazygit
     ripgrep
     rsync
+    sox
     wget
 
     # system
+    e2fsprogs
+    htop
+    lsof
     nautilus
+    pciutils
     sbctl
     seahorse
+    usbutils
 
     # utilities
     bitwarden-cli

@@ -11,6 +11,10 @@
   };
 
   config = {
+    services.udev.extraRules = ''
+      SUBSYSTEM=="vfio", GROUP="kvm", MODE="0660"
+    '';
+
     assertions = [
       {
         assertion =
@@ -30,6 +34,7 @@
         "amd_iommu=on"
         "iommu=pt"
         "vfio-pci.ids=${lib.concatStringsSep "," config.modules.vfio-gpu.pciIds}"
+        "kvm.ignore_msrs=1" # Windows guests access MSRs not emulated by KVM
       ];
     };
   };
