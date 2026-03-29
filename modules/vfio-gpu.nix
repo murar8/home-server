@@ -1,0 +1,43 @@
+{ config, lib, ... }:
+
+{
+  options.modules.vfio-gpu.pciIds = lib.mkOption {
+    type = lib.types.listOf lib.types.str;
+    description = "PCI vendor:device IDs to bind to vfio-pci.";
+    example = [
+      "10de:1b81"
+      "10de:10f0"
+    ];
+  };
+
+  config = {
+    services.udev.extraRules = ''
+      SUBSYSTEM=="vfio", GROUP="kvm", MODE="0660"
+    '';
+
+    assertions = [
+      {
+        assertion =
+          config.hardware.cpu.amd.updateMicrocode || builtins.elem "kvm-amd" config.boot.kernelModules;
+        message = "vfio-gpu module uses amd_iommu=on and requires an AMD CPU.";
+      }
+    ];
+
+    boot = {
+      initrd.kernelModules = [
+        "vfio_pci"
+        "vfio"
+        "vfio_iommu_type1"
+      ];
+      # Ensure vfio-pci binds before xhci_pci claims USB controllers
+      extraModprobeConfig = "softdep xhci_pci pre: vfio-pci";
+      # AMD-only; use intel_iommu=on for Intel hosts
+      kernelParams = [
+        "amd_iommu=on"
+        "iommu=pt"
+        "vfio-pci.ids=${lib.concatStringsSep "," config.modules.vfio-gpu.pciIds}"
+        "kvm.ignore_msrs=1" # Windows guests access MSRs not emulated by KVM
+      ];
+    };
+  };
+}

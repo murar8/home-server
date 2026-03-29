@@ -2,6 +2,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     impermanence.url = "github:nix-community/impermanence";
+    neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
     dotfiles = {
       url = "github:murar8/dotfiles";
       flake = false;
@@ -22,30 +23,57 @@
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    NixVirt = {
+      url = "https://flakehub.com/f/AshleyYakeley/NixVirt/*.tar.gz";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
     {
       self,
       nixpkgs,
+      neovim-nightly-overlay,
       disko,
       lanzaboote,
       impermanence,
+      NixVirt,
       dotfiles,
       treefmt-nix,
       git-hooks,
       ...
     }:
+    let
+      commonModules = [
+        disko.nixosModules.disko
+        lanzaboote.nixosModules.lanzaboote
+        { nixpkgs.overlays = [ neovim-nightly-overlay.overlays.default ]; }
+      ];
+    in
     {
-      nixosConfigurations.server = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        specialArgs = { inherit dotfiles; };
-        modules = [
-          disko.nixosModules.disko
-          lanzaboote.nixosModules.lanzaboote
-          impermanence.nixosModules.impermanence
-          ./configuration.nix
-        ];
+      nixosConfigurations = {
+        prodesk = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit dotfiles; };
+          modules = [
+            disko.nixosModules.disko
+            lanzaboote.nixosModules.lanzaboote
+            impermanence.nixosModules.impermanence
+            ./configuration.nix
+          ];
+        };
+
+        thinkpad = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit dotfiles; };
+          modules = commonModules ++ [ ./hosts/thinkpad/configuration.nix ];
+        };
+
+        debian = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit dotfiles NixVirt; };
+          modules = commonModules ++ [ ./hosts/debian/configuration.nix ];
+        };
       };
 
       formatter.x86_64-linux =
