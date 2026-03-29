@@ -71,6 +71,7 @@ in
       git
       nano
       neovim
+      rsync
     ];
 
     persistence."/persist" = {
