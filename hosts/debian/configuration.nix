@@ -12,6 +12,7 @@ in
     ../../modules/looking-glass.nix
     ../../modules/vfio-gpu.nix
     ../../modules/virt-manager.nix
+    ../../modules/wol-vm-start.nix
     ./hardware-configuration.nix
     ./disk-config.nix
   ];
@@ -23,6 +24,7 @@ in
     hostName = "debian";
     useNetworkd = true;
     networkmanager.enable = false;
+    firewall.allowedUDPPorts = [ 9 ]; # WoL magic packets for VM auto-start
     nameservers = [
       "9.9.9.9"
       "149.112.112.112"
@@ -30,6 +32,10 @@ in
   };
 
   systemd.network = {
+    links."20-enp5s0" = {
+      matchConfig.OriginalName = "enp5s0";
+      linkConfig.WakeOnLan = "magic";
+    };
     netdevs."20-br0".netdevConfig = {
       Name = "br0";
       Kind = "bridge";
@@ -38,7 +44,6 @@ in
       "20-enp5s0" = {
         matchConfig.Name = "enp5s0";
         networkConfig.Bridge = "br0";
-        linkConfig.WakeOnLan = "magic";
       };
       "20-br0" = {
         matchConfig.Name = "br0";
@@ -73,6 +78,7 @@ in
       "10de:10f0" # GTX 1070 Audio
       "1022:15b7" # USB controller (passthrough to VM)
     ];
+    wol-vm-start.enable = true;
     initrd-ssh = {
       interface = "enp5s0";
       address = [ "192.168.1.60/24" ];
