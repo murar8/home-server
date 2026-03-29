@@ -55,11 +55,9 @@
         prodesk = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit dotfiles; };
-          modules = [
-            disko.nixosModules.disko
-            lanzaboote.nixosModules.lanzaboote
+          modules = commonModules ++ [
             impermanence.nixosModules.impermanence
-            ./configuration.nix
+            ./hosts/prodesk/configuration.nix
           ];
         };
 

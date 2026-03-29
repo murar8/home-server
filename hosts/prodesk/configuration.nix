@@ -22,7 +22,7 @@ in
 
   system.autoUpgrade = {
     enable = true;
-    flake = "github:murar8/home-server#server";
+    flake = "github:murar8/home-server#prodesk";
     flags = [
       "--recreate-lock-file"
       "--no-write-lock-file"
