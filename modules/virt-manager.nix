@@ -7,6 +7,11 @@
 
 let
   cfg = config.modules.virt-manager;
+
+  inhibitSuspendHook = pkgs.writeShellApplication {
+    name = "vm-inhibit-suspend-hook";
+    text = builtins.readFile ./vm-inhibit-suspend.sh;
+  };
 in
 
 {
@@ -20,13 +25,22 @@ in
     virtualisation.libvirtd = {
       enable = true;
       qemu.runAsRoot = false;
+      hooks.qemu."inhibit-suspend" = lib.getExe inhibitSuspendHook;
     };
 
     programs.virt-manager.enable = true;
 
-    systemd.services.libvirtd.serviceConfig.LimitMEMLOCK = "infinity";
-
-    systemd.tmpfiles.rules = [ "L+ /var/lib/qemu/firmware - - - - ${pkgs.qemu}/share/qemu/firmware" ];
+    systemd = {
+      services.libvirtd.serviceConfig.LimitMEMLOCK = "infinity";
+      tmpfiles.rules = [ "L+ /var/lib/qemu/firmware - - - - ${pkgs.qemu}/share/qemu/firmware" ];
+      services."vm-inhibit-suspend@" = {
+        description = "Inhibit suspend while libvirt VM %i is running";
+        serviceConfig = {
+          Type = "simple";
+          ExecStart = "systemd-inhibit --who=libvirt --why=\"VM %i is running\" ${pkgs.coreutils}/bin/sleep infinity";
+        };
+      };
+    };
 
     users.users = {
       ${cfg.user}.extraGroups = [
