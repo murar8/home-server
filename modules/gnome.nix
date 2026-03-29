@@ -1,4 +1,11 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
+
+let
+  dconfSettings = import ./dconf-settings.nix { inherit lib; };
+  dconfKeys = lib.concatMap (
+    section: map (key: "/${section}/${key}") (builtins.attrNames dconfSettings.${section})
+  ) (builtins.attrNames dconfSettings);
+in
 
 {
   services = {
@@ -14,7 +21,6 @@
     };
     desktopManager.gnome.enable = true;
     gnome.core-apps.enable = false;
-    gvfs.enable = true;
   };
 
   qt = {
@@ -23,10 +29,26 @@
     style = "adwaita-dark";
   };
 
+  # Reset managed dconf keys in user db on login so stale values don't
+  # diverge from the locked system profile.
+  systemd.user.services.dconf-reset = {
+    description = "Reset managed dconf keys in user db";
+    wantedBy = [ "graphical-session.target" ];
+    after = [ "dbus.socket" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = toString (
+        pkgs.writeShellScript "dconf-reset" (
+          builtins.concatStringsSep "\n" (map (k: "${pkgs.dconf}/bin/dconf reset ${k}") dconfKeys)
+        )
+      );
+    };
+  };
+
   programs.dconf.profiles.user.databases = [
     {
       lockAll = true;
-      keyfiles = [ ../dconf ];
+      settings = dconfSettings;
     }
   ];
 
