@@ -38,6 +38,7 @@ in
       "20-enp5s0" = {
         matchConfig.Name = "enp5s0";
         networkConfig.Bridge = "br0";
+        linkConfig.WakeOnLan = "magic";
       };
       "20-br0" = {
         matchConfig.Name = "br0";

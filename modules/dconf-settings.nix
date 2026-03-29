@@ -101,6 +101,17 @@ in
       "<Super><Shift><Alt>l"
       "<Super><Shift>Page_Down"
     ];
+  }
+  # Super+Shift+N = move to workspace N (space-bar can't write these due to lockAll)
+  // lib.genAttrs (map (n: "move-to-workspace-${toString n}") (lib.range 1 10)) (
+    name:
+    let
+      n = lib.removePrefix "move-to-workspace-" name;
+      key = if n == "10" then "0" else n;
+    in
+    [ "<Super><Shift>${key}" ]
+  )
+  // {
 
     # Alt+Tab = flat window list, Super+Tab = grouped by app
     switch-windows = [ "<Alt>Tab" ];
