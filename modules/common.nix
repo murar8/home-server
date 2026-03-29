@@ -185,6 +185,7 @@
     fzf
     gh
     git
+    imagemagick
     jq
     lazydocker
     lazygit
@@ -192,6 +193,7 @@
     rsync
     sox
     wget
+    wl-clipboard
 
     # system
     e2fsprogs
