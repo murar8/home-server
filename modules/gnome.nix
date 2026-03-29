@@ -72,7 +72,6 @@ in
     gnomeExtensions.space-bar
     gnomeExtensions.syncthing-toggle
     gnomeExtensions.tailscale-status
-    gnomeExtensions.tiling-assistant
     gnomeExtensions.vitals
   ];
 }

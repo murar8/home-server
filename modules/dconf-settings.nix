@@ -41,16 +41,28 @@ in
   };
 
   "org/gnome/desktop/wm/keybindings" = {
+    # Super+q = close (frees from Alt+F4 only)
     close = [
-      "<Alt>F4"
       "<Super>q"
+      "<Alt>F4"
     ];
-    maximize = [ "<Super>period" ];
-    minimize = [ "<Super>comma" ];
-    move-to-monitor-down = [
-      "<Super><Shift>Down"
-      "<Super><Shift>j"
+
+    # Super+f = fullscreen, Super+r = resize, Super+m = move
+    toggle-fullscreen = [ "<Super>f" ];
+    begin-resize = [ "<Super>r" ];
+    begin-move = [ "<Super>m" ];
+
+    # Super+Ctrl+dir = maximize/unmaximize (moved off Super+Up/Down for focus-changer)
+    maximize = [
+      "<Control><Super>Up"
+      "<Control><Super>k"
     ];
+    unmaximize = [
+      "<Control><Super>Down"
+      "<Control><Super>j"
+    ];
+
+    # Super+Shift+dir = move to monitor (add hjkl alternatives)
     move-to-monitor-left = [
       "<Super><Shift>Left"
       "<Super><Shift>h"
@@ -63,67 +75,44 @@ in
       "<Super><Shift>Up"
       "<Super><Shift>k"
     ];
-    move-to-workspace-1 = [ "<Super><Shift>1" ];
-    move-to-workspace-2 = [ "<Super><Shift>2" ];
-    move-to-workspace-3 = [ "<Super><Shift>3" ];
-    move-to-workspace-4 = [ "<Super><Shift>4" ];
-    move-to-workspace-5 = [ "<Super><Shift>5" ];
-    move-to-workspace-6 = [ "<Super><Shift>6" ];
-    move-to-workspace-7 = [ "<Super><Shift>7" ];
-    move-to-workspace-8 = [ "<Super><Shift>8" ];
-    move-to-workspace-9 = [ "<Super><Shift>9" ];
-    move-to-workspace-10 = [ "<Super><Shift>0" ];
-    move-to-workspace-down = [
-      "<Control><Shift><Super>Down"
-      "<Control><Shift><Super>j"
+    move-to-monitor-down = [
+      "<Super><Shift>Down"
+      "<Super><Shift>j"
     ];
-    move-to-workspace-left = [
-      "<Super><Shift>Page_Up"
-      "<Super><Shift><Alt>Left"
-      "<Control><Shift><Super>Left"
-      "<Control><Shift><Super>h"
-      "<Super><Shift><Alt>h"
-    ];
-    move-to-workspace-right = [
-      "<Super><Shift>Page_Down"
-      "<Super><Shift><Alt>Right"
-      "<Control><Shift><Super>Right"
-      "<Super><Shift><Alt>l"
-      "<Control><Shift><Super>l"
-    ];
-    move-to-workspace-up = [
-      "<Control><Shift><Super>Up"
-      "<Control><Shift><Super>k"
-    ];
-    switch-applications = [ "<Super>Tab" ];
-    switch-applications-backward = [ "<Shift><Super>Tab" ];
-    switch-group = [ "<Super>Above_Tab" ];
-    switch-group-backward = [ "<Shift><Super>Above_Tab" ];
-    switch-to-workspace-down = [
-      "<Control><Super><Alt>Down"
-      "<Control><Super><Alt>j"
-    ];
+
+    # Super+Alt+dir = workspace left/right (add hjkl, keep Page keys)
     switch-to-workspace-left = [
-      "<Super>Page_Up"
       "<Super><Alt>Left"
-      "<Control><Super><Alt>Left"
       "<Super><Alt>h"
-      "<Control><Super><Alt>h"
+      "<Super>Page_Up"
     ];
     switch-to-workspace-right = [
-      "<Super>Page_Down"
       "<Super><Alt>Right"
-      "<Control><Super><Alt>Right"
       "<Super><Alt>l"
-      "<Control><Super><Alt>l"
+      "<Super>Page_Down"
     ];
-    switch-to-workspace-up = [
-      "<Control><Super><Alt>Up"
-      "<Control><Super><Alt>k"
+    move-to-workspace-left = [
+      "<Super><Shift><Alt>Left"
+      "<Super><Shift><Alt>h"
+      "<Super><Shift>Page_Up"
     ];
+    move-to-workspace-right = [
+      "<Super><Shift><Alt>Right"
+      "<Super><Shift><Alt>l"
+      "<Super><Shift>Page_Down"
+    ];
+
+    # Alt+Tab = flat window list, Super+Tab = grouped by app
     switch-windows = [ "<Alt>Tab" ];
     switch-windows-backward = [ "<Shift><Alt>Tab" ];
-    unmaximize = emptyAs;
+    switch-applications = [ "<Super>Tab" ];
+    switch-applications-backward = [ "<Shift><Super>Tab" ];
+
+    # Disable to free Super+h for focus-changer
+    minimize = emptyAs;
+    # Remove Super+Above_Tab to free Super+grave for space-bar
+    switch-group = [ "<Alt>Above_Tab" ];
+    switch-group-backward = [ "<Shift><Alt>Above_Tab" ];
   };
 
   "org/gnome/desktop/wm/preferences" = {
@@ -132,7 +121,7 @@ in
 
   "org/gnome/mutter" = {
     dynamic-workspaces = false;
-    edge-tiling = false;
+    edge-tiling = true;
     experimental-features = [
       "scale-monitor-framebuffer"
       "xwayland-native-scaling"
@@ -142,13 +131,16 @@ in
     workspaces-only-on-primary = true;
   };
 
+  # Super+Ctrl+dir = tile left/right half (moved off Super+Left/Right for focus-changer)
   "org/gnome/mutter/keybindings" = {
-    toggle-tiled-left = emptyAs;
-    toggle-tiled-right = emptyAs;
-  };
-
-  "org/gnome/mutter/wayland/keybindings" = {
-    restore-shortcuts = emptyAs;
+    toggle-tiled-left = [
+      "<Control><Super>Left"
+      "<Control><Super>h"
+    ];
+    toggle-tiled-right = [
+      "<Control><Super>Right"
+      "<Control><Super>l"
+    ];
   };
 
   "org/gnome/nautilus/preferences" = {
@@ -164,35 +156,21 @@ in
   };
 
   "org/gnome/settings-daemon/plugins/media-keys" = {
-    custom-keybindings = [
-      "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/slack/"
-      "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/editor/"
-      "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/terminal/"
-    ];
-    home = [ "<Super>f" ];
-    screensaver = [ "<Super>o" ];
+    screensaver = [ "<Super>Escape" ];
+    home = [ "<Super>e" ];
+    www = [ "<Super>b" ];
+    volume-up = [ "<Super>F10" ];
     volume-down = [ "<Super>F11" ];
     volume-mute = [ "<Super>F12" ];
-    volume-up = [ "<Super>F10" ];
-    www = [ "<Super>b" ];
+    custom-keybindings = [
+      "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
+    ];
   };
 
-  "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/editor" = {
-    binding = "<Super>e";
-    command = "ghostty -e nvim";
-    name = "editor";
-  };
-
-  "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/slack" = {
-    binding = "<Super>r";
-    command = "slack";
-    name = "slack";
-  };
-
-  "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/terminal" = {
-    binding = "<Super>t";
+  "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
+    name = "Terminal";
     command = "ghostty";
-    name = "terminal";
+    binding = "<Super>Return";
   };
 
   "org/gnome/settings-daemon/plugins/power" = {
@@ -218,7 +196,6 @@ in
       "space-bar@luchrioh"
       "syncthing-toggle@rehhouari.github.com"
       "tailscale-status@maxgallup.github.com"
-      "tiling-assistant@leleat-on-github"
     ];
     favorite-apps = [
       "google-chrome.desktop"
@@ -228,35 +205,14 @@ in
     ];
   };
 
-  "org/gnome/shell/keybindings" = {
-    open-new-window-application-1 = emptyAs;
-    open-new-window-application-2 = emptyAs;
-    open-new-window-application-3 = emptyAs;
-    open-new-window-application-4 = emptyAs;
-    open-new-window-application-5 = emptyAs;
-    open-new-window-application-6 = emptyAs;
-    open-new-window-application-7 = emptyAs;
-    open-new-window-application-8 = emptyAs;
-    open-new-window-application-9 = emptyAs;
-    shift-overview-down = [
-      "<Super><Alt>Down"
-      "<Super><Alt>j"
-    ];
-    shift-overview-up = [
-      "<Super><Alt>Up"
-      "<Super><Alt>k"
-    ];
-    switch-to-application-1 = emptyAs;
-    switch-to-application-2 = emptyAs;
-    switch-to-application-3 = emptyAs;
-    switch-to-application-4 = emptyAs;
-    switch-to-application-5 = emptyAs;
-    switch-to-application-6 = emptyAs;
-    switch-to-application-7 = emptyAs;
-    switch-to-application-8 = emptyAs;
-    switch-to-application-9 = emptyAs;
-    toggle-message-tray = emptyAs;
-  };
+  "org/gnome/shell/keybindings" =
+    # Disable to free Super+1-9 for space-bar workspace switching
+    lib.genAttrs (map (n: "switch-to-application-${toString n}") (lib.range 1 9)) (_: emptyAs) // {
+      # Disable to free Super+n for space-bar activate-empty-key
+      focus-active-notification = emptyAs;
+      # Disable Super+v (clipboard) and Super+m (begin-move) aliases
+      toggle-message-tray = emptyAs;
+    };
 
   "org/gnome/shell/extensions/caffeine" = {
     inhibit-apps = [
@@ -270,84 +226,63 @@ in
 
   "org/gnome/shell/extensions/clipboard-indicator" = {
     cache-size = mkInt32 32;
-    clear-history = emptyAs;
     display-mode = mkInt32 2;
     enable-keybindings = true;
     history-size = mkInt32 200;
     move-item-first = true;
     next-entry = [ "<Super>v" ];
-    pinned-on-bottom = false;
     prev-entry = [ "<Super><Shift>v" ];
-    preview-size = mkInt32 60;
-    private-mode-binding = emptyAs;
-    strip-text = true;
     toggle-menu = [ "<Super><Alt>v" ];
+    clear-history = emptyAs;
+    private-mode-binding = emptyAs;
+    pinned-on-bottom = false;
+    preview-size = mkInt32 60;
+    strip-text = true;
   };
 
-  "org/gnome/shell/extensions/dash-to-dock" = {
-    app-ctrl-hotkey-1 = emptyAs;
-    app-ctrl-hotkey-2 = emptyAs;
-    app-ctrl-hotkey-3 = emptyAs;
-    app-ctrl-hotkey-4 = emptyAs;
-    app-ctrl-hotkey-5 = emptyAs;
-    app-ctrl-hotkey-6 = emptyAs;
-    app-ctrl-hotkey-7 = emptyAs;
-    app-ctrl-hotkey-8 = emptyAs;
-    app-ctrl-hotkey-9 = emptyAs;
-    app-ctrl-hotkey-10 = emptyAs;
-    app-hotkey-1 = emptyAs;
-    app-hotkey-2 = emptyAs;
-    app-hotkey-3 = emptyAs;
-    app-hotkey-4 = emptyAs;
-    app-hotkey-5 = emptyAs;
-    app-hotkey-6 = emptyAs;
-    app-hotkey-7 = emptyAs;
-    app-hotkey-8 = emptyAs;
-    app-hotkey-9 = emptyAs;
-    app-hotkey-10 = emptyAs;
-    app-shift-hotkey-1 = emptyAs;
-    app-shift-hotkey-2 = emptyAs;
-    app-shift-hotkey-3 = emptyAs;
-    app-shift-hotkey-4 = emptyAs;
-    app-shift-hotkey-5 = emptyAs;
-    app-shift-hotkey-6 = emptyAs;
-    app-shift-hotkey-7 = emptyAs;
-    app-shift-hotkey-8 = emptyAs;
-    app-shift-hotkey-9 = emptyAs;
-    app-shift-hotkey-10 = emptyAs;
-    autohide = true;
-    autohide-in-fullscreen = false;
-    dock-position = "BOTTOM";
-    hot-keys = false;
-    intellihide = true;
-    intellihide-mode = "FOCUS_APPLICATION_WINDOWS";
-    isolate-monitors = true;
-    isolate-workspaces = true;
-    multi-monitor = true;
-    require-pressure-to-show = true;
-    scroll-action = "cycle-windows";
-    show-mounts-network = false;
-    show-mounts-only-mounted = true;
-    show-trash = false;
-    transparency-mode = "DYNAMIC";
-  };
+  "org/gnome/shell/extensions/dash-to-dock" =
+    # Disable to free Super+1-0 for space-bar workspace switching
+    lib.genAttrs (lib.concatMap (prefix: map (n: "${prefix}-${toString n}") (lib.range 1 10)) [
+      "app-hotkey"
+      "app-shift-hotkey"
+      "app-ctrl-hotkey"
+    ]) (_: emptyAs)
+    // {
+      autohide = true;
+      autohide-in-fullscreen = false;
+      dock-position = "BOTTOM";
+      hot-keys = false;
+      # Disable to free Super+q for close window
+      shortcut = emptyAs;
+      intellihide = true;
+      intellihide-mode = "FOCUS_APPLICATION_WINDOWS";
+      isolate-monitors = true;
+      isolate-workspaces = true;
+      multi-monitor = true;
+      require-pressure-to-show = true;
+      scroll-action = "cycle-windows";
+      show-mounts-network = false;
+      show-mounts-only-mounted = true;
+      show-trash = false;
+      transparency-mode = "DYNAMIC";
+    };
 
   "org/gnome/shell/extensions/focus-changer" = {
-    focus-down = [
-      "<Super>Down"
-      "<Super>j"
-    ];
     focus-left = [
       "<Super>Left"
       "<Super>h"
     ];
-    focus-right = [
-      "<Super>Right"
-      "<Super>l"
+    focus-down = [
+      "<Super>Down"
+      "<Super>j"
     ];
     focus-up = [
       "<Super>Up"
       "<Super>k"
+    ];
+    focus-right = [
+      "<Super>Right"
+      "<Super>l"
     ];
   };
 
@@ -373,13 +308,10 @@ in
   };
 
   "org/gnome/shell/extensions/space-bar/shortcuts" = {
-    activate-empty-key = emptyAs;
-    activate-previous-key = emptyAs;
     enable-activate-workspace-shortcuts = true;
     enable-move-to-workspace-shortcuts = true;
     move-workspace-left = [ "<Super>bracketleft" ];
     move-workspace-right = [ "<Super>bracketright" ];
-    open-menu = emptyAs;
   };
 
   "org/gnome/shell/extensions/vitals" = {
@@ -399,53 +331,6 @@ in
     show-system = false;
     show-temperature = true;
     show-voltage = false;
-  };
-
-  "org/gnome/shell/extensions/tiling-assistant" = {
-    activate-layout0 = emptyAs;
-    activate-layout1 = emptyAs;
-    activate-layout2 = emptyAs;
-    activate-layout3 = emptyAs;
-    auto-tile = emptyAs;
-    center-window = emptyAs;
-    debugging-free-rects = emptyAs;
-    debugging-show-tiled-rects = emptyAs;
-    restore-window = [
-      "<Control><Super>Down"
-      "<Control><Super>j"
-    ];
-    search-popup-layout = emptyAs;
-    tile-bottom-half = emptyAs;
-    tile-bottom-half-ignore-ta = emptyAs;
-    tile-bottomleft-quarter = emptyAs;
-    tile-bottomleft-quarter-ignore-ta = emptyAs;
-    tile-bottomright-quarter = emptyAs;
-    tile-bottomright-quarter-ignore-ta = emptyAs;
-    tile-edit-mode = emptyAs;
-    tile-left-half = [
-      "<Control><Super>Left"
-      "<Control><Super>h"
-    ];
-    tile-left-half-ignore-ta = emptyAs;
-    tile-maximize = [
-      "<Control><Super>Up"
-      "<Control><Super>k"
-    ];
-    tile-maximize-horizontally = emptyAs;
-    tile-maximize-vertically = emptyAs;
-    tile-right-half = [
-      "<Control><Super>Right"
-      "<Control><Super>l"
-    ];
-    tile-right-half-ignore-ta = emptyAs;
-    tile-top-half = emptyAs;
-    tile-top-half-ignore-ta = emptyAs;
-    tile-topleft-quarter = emptyAs;
-    tile-topleft-quarter-ignore-ta = emptyAs;
-    tile-topright-quarter = emptyAs;
-    tile-topright-quarter-ignore-ta = emptyAs;
-    toggle-always-on-top = emptyAs;
-    toggle-tiling-popup = emptyAs;
   };
 
   "org/gtk/gtk4/settings/file-chooser" = {

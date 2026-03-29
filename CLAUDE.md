@@ -140,9 +140,9 @@ nix flake check
 - ThinkPad imports: common, gnome, fprintd
 - NetworkManager is per-host (thinkpad only) — debian uses
   systemd-networkd with bridge (br0) for VM networking
-- `dconf/user.ini` — GNOME dconf keyfile (settings,
-  keybindings, extension configs); loaded via
-  `programs.dconf.profiles.user.databases[].keyfiles`
+- `modules/dconf-settings.nix` — all dconf settings
+  (keybindings, extensions, appearance) as Nix attrset;
+  loaded via `programs.dconf.profiles.user.databases[].settings`
 
 ## Code Style
 
@@ -157,16 +157,23 @@ nix flake check
 
 ## GNOME / dconf
 
-- dconf keyfile format (INI) avoids translating GVariant
-  types to Nix — use `dconf dump /` to export, edit file
 - `lockAll = true` forces system defaults over user
   dconf db — required for settings to actually apply
+- dconf-reset systemd user service runs on login to clear
+  managed keys in user db — logout/login sufficient after
+  rebuild, no reboot needed; `dconf reset -f /` to force
 - GNOME extensions must be both in `systemPackages` AND
-  in `enabled-extensions` in the dconf keyfile
+  in `enabled-extensions` in dconf settings
 - Extensions need logout/login after rebuild to appear
-- `@as []` is dconf syntax for empty string array
-- Debian desktop settings reference:
-  `~/.local/bin/reset-keybindings`
+- Extension keybindings aren't in system gsettings schemas
+  but dconf writes work directly — set via dconf-settings.nix
+  like any other key (e.g., focus-changer, clipboard-indicator)
+- dash-to-dock has 3 hotkey families (app-hotkey, app-shift-hotkey,
+  app-ctrl-hotkey) × 10 — all must be disabled to fully
+  free Super+N keys
+- Keybinding modifier conventions (in dconf-settings.nix):
+  Super=focus, +Shift=move, +Ctrl=geometry, +Alt=workspace;
+  hjkl ≡ arrows everywhere; bare Super+letter for actions/launchers
 
 ## Nix Gotchas
 
