@@ -1,4 +1,9 @@
-{ lib, pkgs, ... }:
+{
+  lib,
+  pkgs,
+  vars,
+  ...
+}:
 
 let
   dconfSettings = import ./dconf-settings.nix { inherit lib; };
@@ -16,7 +21,7 @@ in
       };
       autoLogin = {
         enable = true;
-        user = "murar8";
+        inherit (vars) user;
       };
     };
     desktopManager.gnome.enable = true;

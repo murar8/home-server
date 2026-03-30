@@ -1,4 +1,9 @@
-{ pkgs, NixVirt, ... }:
+{
+  pkgs,
+  vars,
+  NixVirt,
+  ...
+}:
 
 let
   vmXML = vm: NixVirt.lib.domain.writeXML (import vm NixVirt.lib.xml);
@@ -6,7 +11,7 @@ in
 {
   imports = [
     NixVirt.nixosModules.default
-    ../../modules/common.nix
+    ../../modules/desktop.nix
     ../../modules/gnome.nix
     ../../modules/initrd-ssh.nix
     ../../modules/looking-glass.nix
@@ -25,10 +30,7 @@ in
     useNetworkd = true;
     networkmanager.enable = false;
     firewall.allowedUDPPorts = [ 9 ]; # WoL magic packets for VM auto-start
-    nameservers = [
-      "9.9.9.9"
-      "149.112.112.112"
-    ];
+    inherit (vars) nameservers;
   };
 
   systemd.network = {

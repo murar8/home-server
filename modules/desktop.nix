@@ -1,16 +1,14 @@
 {
   lib,
   pkgs,
-  dotfiles,
+  vars,
   ...
 }:
 
 {
+  imports = [ ./base.nix ];
+
   nixpkgs.config.allowUnfree = true;
-
-  system.stateVersion = "25.11";
-
-  time.timeZone = "Europe/Madrid";
 
   i18n = {
     defaultLocale = "es_ES.UTF-8";
@@ -29,31 +27,7 @@
     options = "lv3:ralt_alt,compose:ralt";
   };
 
-  users.users.murar8 = {
-    isNormalUser = true;
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKCfqnufJrf3pZxXvFcqbB1vUhyc0EFuDBuUEO7Q0Luq lnzmrr@gmail.com"
-    ];
-    extraGroups = [
-      "wheel"
-      "docker"
-    ];
-  };
-
-  nix = {
-    gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 7d";
-    };
-    settings = {
-      auto-optimise-store = true;
-      experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
-    };
-  };
+  users.users.${vars.user}.extraGroups = [ "docker" ];
 
   boot = {
     initrd.systemd = {
@@ -117,40 +91,26 @@
       };
     };
 
-    openssh = {
-      enable = true;
-      settings = {
-        PermitRootLogin = "no";
-        PasswordAuthentication = false;
-      };
-    };
-
     tailscale = {
       enable = true;
-      extraSetFlags = [ "--operator=murar8" ];
+      extraSetFlags = [ "--operator=${vars.user}" ];
     };
 
     syncthing = {
       enable = true;
-      user = "murar8";
-      dataDir = "/home/murar8";
+      inherit (vars) user;
+      dataDir = "/home/${vars.user}";
       openDefaultPorts = true;
       systemService = false;
     };
 
-    btrfs.autoScrub.enable = true;
     envfs.enable = true;
     fwupd.enable = true;
   };
 
   virtualisation.docker.enable = true;
 
-  programs = {
-    nix-ld.enable = true;
-    bash.loginShellInit = ''
-      [ -f ~/.bashrc ] && . ~/.bashrc
-    '';
-  };
+  programs.nix-ld.enable = true;
 
   environment.sessionVariables = {
     PATH = [ "$HOME/.local/bin" ];
@@ -208,20 +168,4 @@
     scrcpy
   ];
 
-  systemd.services.dotfiles-checkout = {
-    description = "Checkout dotfiles into home directory";
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      User = "murar8";
-      Group = "users";
-    };
-    path = with pkgs; [
-      git
-      openssh
-    ];
-    script = builtins.readFile "${dotfiles}/.bootstrap";
-  };
 }

@@ -69,24 +69,14 @@ in
   # https://wiki.nixos.org/wiki/Systemd_Hardening
   # https://man7.org/linux/man-pages/man5/systemd.exec.5.html
   # sandbox caddy: only needs network + its state dir + tailscale socket (read-only)
-  systemd.services.caddy.serviceConfig = {
+  systemd.services.caddy.serviceConfig = vars.serviceHardening // {
     ProtectSystem = "strict";
     ProtectHome = true;
-    ProtectKernelTunables = true;
-    ProtectKernelModules = true;
-    ProtectKernelLogs = true;
-    ProtectControlGroups = true;
-    ProtectClock = true;
-    ProtectHostname = true;
     ProtectProc = "invisible";
     ProcSubset = "pid";
-    LockPersonality = true;
-    RestrictRealtime = true;
-    RestrictSUIDSGID = true;
     RestrictNamespaces = true;
     SystemCallArchitectures = "native";
     MemoryDenyWriteExecute = true;
-    NoNewPrivileges = true;
     ReadWritePaths = [ "/var/lib/caddy" ];
   };
 }

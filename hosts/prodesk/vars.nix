@@ -1,7 +1,9 @@
+let
+  shared = import ../../vars.nix;
+in
 {
-  vars = {
+  vars = shared // {
     hostname = "prodesk";
-    user = "murar8";
 
     net = {
       ip = "192.168.1.130";
@@ -10,16 +12,24 @@
       subnetPrefix = "192.168.1.";
       gateway = "192.168.1.1";
       interface = "enp1s0";
-      nameservers = [
-        "9.9.9.9"
-        "149.112.112.112"
-      ];
+      inherit (shared) nameservers;
     };
 
     tailnet = "tail87795f.ts.net";
 
-    ssh = {
-      key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKCfqnufJrf3pZxXvFcqbB1vUhyc0EFuDBuUEO7Q0Luq lnzmrr@gmail.com";
+    # https://wiki.nixos.org/wiki/Systemd_Hardening
+    # shared baseline for all sandboxed services on this host
+    serviceHardening = {
+      ProtectKernelTunables = true;
+      ProtectKernelModules = true;
+      ProtectKernelLogs = true;
+      ProtectControlGroups = true;
+      ProtectClock = true;
+      ProtectHostname = true;
+      NoNewPrivileges = true;
+      LockPersonality = true;
+      RestrictRealtime = true;
+      RestrictSUIDSGID = true;
     };
   };
 }

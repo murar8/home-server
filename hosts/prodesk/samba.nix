@@ -2,19 +2,9 @@ _:
 
 let
   inherit (import ./vars.nix) vars;
-  sambaHardening = {
+  sambaHardening = vars.serviceHardening // {
     ProtectSystem = "full";
     ProtectHome = true;
-    ProtectKernelTunables = true;
-    ProtectKernelModules = true;
-    ProtectKernelLogs = true;
-    ProtectControlGroups = true;
-    ProtectClock = true;
-    ProtectHostname = true;
-    RestrictRealtime = true;
-    RestrictSUIDSGID = true;
-    NoNewPrivileges = true;
-    LockPersonality = true;
   };
 in
 {

@@ -1,8 +1,8 @@
-_:
+{ vars, ... }:
 
 {
   imports = [
-    ../../modules/common.nix
+    ../../modules/desktop.nix
     ../../modules/gnome.nix
     ../../modules/fprintd.nix
     ./hardware-configuration.nix
@@ -14,5 +14,5 @@ _:
     networkmanager.enable = true;
   };
 
-  users.users.murar8.extraGroups = [ "networkmanager" ];
+  users.users.${vars.user}.extraGroups = [ "networkmanager" ];
 }

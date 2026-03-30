@@ -12,11 +12,29 @@ Multi-host NixOS flake: Prodesk (home server), ThinkPad (laptop), Debian (deskto
 ## Commands
 
 ```sh
+# Debian (local — needs interactive terminal)
+sudo nixos-rebuild switch --flake .#debian
+
+# ThinkPad (local — needs interactive terminal)
+nixos-rebuild switch --flake .#thinkpad --sudo
+
+# Prodesk (remote from debian — needs interactive terminal)
+nixos-rebuild switch --flake .#prodesk \
+  --target-host prodesk --build-host prodesk --ask-sudo-password
+
 nix fmt                              # format
 nix develop -c statix check .        # lint
 nix develop -c nil diagnostics <file>
 nix flake check                      # validate
 ```
+
+## Module Hierarchy
+
+- `vars.nix` — flake-level shared vars (user, sshKey, stateVersion, nameservers), passed via `specialArgs`
+- `modules/base.nix` — universal: nix settings, SSH, user, dotfiles, btrfs scrub, hardening
+- `modules/desktop.nix` — desktop-only (imports base.nix): pipewire, keyd, docker, packages
+- `hosts/prodesk/vars.nix` — inherits shared vars, adds host-specific (net, tailnet, serviceHardening)
+- Prodesk imports `base.nix` directly; thinkpad/debian import `desktop.nix`
 
 ## Code Style
 
@@ -61,7 +79,8 @@ nix flake check                      # validate
 - `writeShellApplication` adds shebang + `set -euo pipefail` — don't duplicate
 - systemd service PATH only has systemd bin — use absolute nix store paths in `ExecStart`
 - `boot.initrd.systemd.network` carries into booted system via systemd-networkd
-- envfs + systemd initrd + fresh install = boot failure (systemd v257); workaround in common.nix
+- envfs + systemd initrd + fresh install = boot failure (systemd v257); workaround in desktop.nix
+- SSH agent forwarding must stay enabled — Bitwarden agent keys forwarded to prodesk for git
 - `pkexec` does not work for `nixos-rebuild` — use `--sudo` flag instead
 - Remote rebuild must always use `--build-host` (nix-copy-closure fails with "lacks a signature")
 - SSH keys are in Bitwarden agent (no files on disk) — use `ssh-add -L | grep lnzmrr` to extract public key
