@@ -102,14 +102,13 @@ in
       "<Super><Shift>Page_Down"
     ];
   }
-  # Super+Shift+N = move to workspace N (space-bar can't write these due to lockAll)
   // lib.genAttrs (map (n: "move-to-workspace-${toString n}") (lib.range 1 10)) (
     name:
     let
       n = lib.removePrefix "move-to-workspace-" name;
       key = if n == "10" then "0" else n;
     in
-    [ "<Super><Shift>${key}" ]
+    [ "<Shift><Super>${key}" ]
   )
   // {
 
@@ -320,7 +319,7 @@ in
 
   "org/gnome/shell/extensions/space-bar/shortcuts" = {
     enable-activate-workspace-shortcuts = true;
-    enable-move-to-workspace-shortcuts = true;
+    enable-move-to-workspace-shortcuts = false;
     move-workspace-left = [ "<Super>bracketleft" ];
     move-workspace-right = [ "<Super>bracketright" ];
   };

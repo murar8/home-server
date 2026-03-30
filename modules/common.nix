@@ -206,6 +206,7 @@
     # utilities
     bitwarden-cli
     bitwarden-desktop
+    mongodb-compass
     scrcpy
   ];
 
