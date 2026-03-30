@@ -102,6 +102,15 @@ in
       "<Super><Shift>Page_Down"
     ];
   }
+  # Super+N = switch to workspace N, Super+Shift+N = move to workspace N
+  // lib.genAttrs (map (n: "switch-to-workspace-${toString n}") (lib.range 1 10)) (
+    name:
+    let
+      n = lib.removePrefix "switch-to-workspace-" name;
+      key = if n == "10" then "0" else n;
+    in
+    [ "<Super>${key}" ]
+  )
   // lib.genAttrs (map (n: "move-to-workspace-${toString n}") (lib.range 1 10)) (
     name:
     let
@@ -216,9 +225,9 @@ in
   };
 
   "org/gnome/shell/keybindings" =
-    # Disable to free Super+1-9 for space-bar workspace switching
+    # Disable to free Super+1-9 for workspace switching
     lib.genAttrs (map (n: "switch-to-application-${toString n}") (lib.range 1 9)) (_: emptyAs) // {
-      # Disable to free Super+n for space-bar activate-empty-key
+      # Disable to free Super+n for workspace switching
       focus-active-notification = emptyAs;
       # Disable Super+v (clipboard) and Super+m (begin-move) aliases
       toggle-message-tray = emptyAs;
@@ -317,12 +326,19 @@ in
     system-workspace-indicator = false;
   };
 
-  "org/gnome/shell/extensions/space-bar/shortcuts" = {
-    enable-activate-workspace-shortcuts = true;
-    enable-move-to-workspace-shortcuts = false;
-    move-workspace-left = [ "<Super>bracketleft" ];
-    move-workspace-right = [ "<Super>bracketright" ];
-  };
+  "org/gnome/shell/extensions/space-bar/shortcuts" =
+    # Reset space-bar's workspace shortcut keys so stale user-db values
+    # don't shadow the locked system profile (native WM keybindings used instead).
+    lib.genAttrs (
+      map (n: "activate-workspace-${toString n}") (lib.range 1 10)
+      ++ map (n: "move-to-workspace-${toString n}") (lib.range 1 10)
+    ) (_: emptyAs)
+    // {
+      enable-activate-workspace-shortcuts = false;
+      enable-move-to-workspace-shortcuts = false;
+      move-workspace-left = [ "<Super>bracketleft" ];
+      move-workspace-right = [ "<Super>bracketright" ];
+    };
 
   "org/gnome/shell/extensions/vitals" = {
     alphabetize = true;

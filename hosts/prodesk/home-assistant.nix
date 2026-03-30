@@ -27,7 +27,7 @@ in
         name = "Home";
         unit_system = "metric";
         external_url = "https://${fqdn}";
-        internal_url = "https://${fqdn}";
+        internal_url = "http://${vars.net.ip}:${toString config.services.home-assistant.config.http.server_port}";
       };
       http = {
         use_x_forwarded_for = true;
