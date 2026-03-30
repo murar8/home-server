@@ -15,3 +15,13 @@ NixOS configurations for personal machines:
 - Remote LUKS unlock via SSH in initrd
 - Impermanence with btrfs rollback on boot (prodesk)
 - Reverse proxy with Tailscale auto-TLS (prodesk)
+
+## Deploy
+
+```sh
+# Remote
+nixos-rebuild switch --flake .#<host> --target-host <host> --build-host <host> --ask-sudo-password
+
+# Local
+nixos-rebuild switch --flake .#<host> --sudo
+```

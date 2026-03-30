@@ -12,25 +12,6 @@ Multi-host NixOS flake: Prodesk (home server), ThinkPad (laptop), Debian (deskto
 ## Commands
 
 ```sh
-# Prodesk (remote — needs interactive terminal)
-nix run nixpkgs#nixos-rebuild -- switch --flake .#prodesk \
-  --target-host prodesk --build-host prodesk --ask-sudo-password
-
-# ThinkPad (local — needs interactive terminal)
-nixos-rebuild switch --flake .#thinkpad --sudo
-
-# ThinkPad (remote)
-nix run nixpkgs#nixos-rebuild -- switch --flake .#thinkpad \
-  --target-host murar8@192.168.1.141 \
-  --build-host murar8@192.168.1.141 \
-  --sudo --ask-sudo-password
-
-# Debian (remote)
-nixos-rebuild switch --flake .#debian \
-  --target-host murar8@192.168.1.60 \
-  --build-host murar8@192.168.1.60 \
-  --ask-sudo-password
-
 nix fmt                              # format
 nix develop -c statix check .        # lint
 nix develop -c nil diagnostics <file>
