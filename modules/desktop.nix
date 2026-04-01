@@ -20,12 +20,7 @@
 
   console.keyMap = "us";
 
-  services.xserver.xkb = {
-    layout = "us";
-    # lv3:ralt_alt — right alt acts as normal alt (not AltGr)
-    # compose:ralt — right alt also serves as compose key (for accented characters)
-    options = "lv3:ralt_alt,compose:ralt";
-  };
+  services.xserver.xkb.layout = "us";
 
   users.users.${vars.user}.extraGroups = [ "docker" ];
 
@@ -115,6 +110,8 @@
   environment.sessionVariables = {
     PATH = [ "$HOME/.local/bin" ];
     SSH_AUTH_SOCK = "$HOME/.bitwarden-ssh-agent.sock";
+    # libxkbcommon needs this to find compose tables for the compose key
+    XLOCALEDIR = "${pkgs.xorg.libX11}/share/X11/locale";
   };
 
   environment.systemPackages = with pkgs; [

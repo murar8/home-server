@@ -2,7 +2,10 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     impermanence.url = "github:nix-community/impermanence";
-    neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
+    neovim-bin = {
+      url = "https://github.com/neovim/neovim/releases/download/v0.12.0/nvim-linux-x86_64.tar.gz";
+      flake = false;
+    };
     dotfiles = {
       url = "github:murar8/dotfiles";
       flake = false;
@@ -33,7 +36,7 @@
     {
       self,
       nixpkgs,
-      neovim-nightly-overlay,
+      neovim-bin,
       disko,
       lanzaboote,
       impermanence,
@@ -48,7 +51,20 @@
       commonModules = [
         disko.nixosModules.disko
         lanzaboote.nixosModules.lanzaboote
-        { nixpkgs.overlays = [ neovim-nightly-overlay.overlays.default ]; }
+        {
+          nixpkgs.overlays = [
+            (_: prev: {
+              neovim = prev.stdenv.mkDerivation {
+                pname = "neovim";
+                version = "0.12.0";
+                src = neovim-bin;
+                nativeBuildInputs = [ prev.autoPatchelfHook ];
+                buildInputs = [ prev.stdenv.cc.cc.lib ];
+                installPhase = "cp -r . $out";
+              };
+            })
+          ];
+        }
       ];
     in
     {

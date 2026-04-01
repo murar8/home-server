@@ -22,6 +22,10 @@ in
     gtk-theme = "adw-gtk3-dark";
   };
 
+  "org/gnome/desktop/input-sources" = {
+    xkb-options = [ "compose:ralt" ];
+  };
+
   "org/gnome/desktop/peripherals/keyboard" = {
     numlock-state = true;
     remember-numlock-state = true;
@@ -183,6 +187,7 @@ in
     volume-mute = [ "<Super>F12" ];
     custom-keybindings = [
       "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
+      "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/"
     ];
   };
 
@@ -192,6 +197,12 @@ in
     binding = "<Super>Return";
   };
 
+  "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1" = {
+    name = "Slack";
+    command = "slack";
+    binding = "<Super>c";
+  };
+
   "org/gnome/settings-daemon/plugins/power" = {
     power-button-action = "suspend";
     sleep-inactive-ac-timeout = mkInt32 1800;
@@ -199,6 +210,7 @@ in
   };
 
   "org/gnome/shell" = {
+    disable-user-extensions = false;
     enabled-extensions = [
       "AlphabeticalAppGrid@stuarthayhurst"
       "BingWallpaper@ineffable-gmail.com"
