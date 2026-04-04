@@ -35,10 +35,15 @@
               ]
               ++ (subtitle "Watering")
               ++ [
-                (tile "sensor.esp_garden_next_watering_${suffix}" "Next Watering")
                 (tile "button.esp_garden_water_plant_${suffix}" "Water")
-                (tile "sensor.esp_garden_last_watering_${suffix}" "Last Watering")
                 (tile "button.esp_garden_stop_watering_${suffix}" "Stop")
+                (tile "sensor.esp_garden_next_watering_${suffix}" "Next Watering")
+                (tile "sensor.esp_garden_last_watering_${suffix}" "Last Watering")
+              ]
+              ++ (subtitle "Water Tank")
+              ++ [
+                (tile "sensor.esp_garden_water_level_${suffix}" "Water Level")
+                (tile "binary_sensor.esp_garden_water_low_${suffix}" "Water Low")
               ]
               ++ (subtitle "Volume")
               ++ [
@@ -47,10 +52,15 @@
                 (tile "sensor.plant_${suffix}_weekly" "This Week")
                 (tile "sensor.plant_${suffix}_monthly" "This Month")
               ]
-              ++ (subtitle "Status")
+              ++ (subtitle "Pump")
               ++ [
                 (tile "fan.esp_garden_pump_${suffix}" "Pump")
-                (tile "binary_sensor.esp_garden_sensor_fault_${suffix}" "Sensor Fault")
+                (tile "sensor.esp_garden_total_water_dispensed_${suffix}" "Total Dispensed")
+              ]
+              ++ (subtitle "Faults")
+              ++ [
+                (tile "binary_sensor.esp_garden_sensor_fault_${suffix}" "Soil Fault")
+                (tile "binary_sensor.esp_garden_water_level_fault_${suffix}" "Water Level Fault")
               ];
           };
         in
