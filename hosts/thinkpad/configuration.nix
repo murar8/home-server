@@ -2,9 +2,10 @@
 
 {
   imports = [
-    ../../modules/desktop.nix
-    ../../modules/gnome.nix
-    ../../modules/fprintd.nix
+    ../../modules/base.nix
+    ../../modules/desktop
+    ../../modules/desktop/gnome
+    ../../modules/desktop/fprintd.nix
     ./hardware-configuration.nix
     ./disk-config.nix
   ];

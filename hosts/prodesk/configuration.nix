@@ -11,12 +11,12 @@
 
   imports = [
     ../../modules/base.nix
+    ../../modules/hardening.nix
+    ../../modules/home-assistant
+    ../../modules/networking.nix
+    ../../modules/samba.nix
     ./hardware-configuration.nix
     ./disk-config.nix
-    ./home-assistant.nix
-    ./networking.nix
-    ./samba.nix
-    ./hardening.nix
   ];
 
   system.autoUpgrade = {

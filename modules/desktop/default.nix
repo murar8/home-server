@@ -6,8 +6,6 @@
 }:
 
 {
-  imports = [ ./base.nix ];
-
   nixpkgs.config.allowUnfree = true;
 
   i18n = {

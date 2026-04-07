@@ -6,13 +6,11 @@ in
 {
   imports = [
     NixVirt.nixosModules.default
-    ../../modules/desktop.nix
-    ../../modules/gnome.nix
-    ../../modules/initrd-ssh.nix
-    ../../modules/looking-glass.nix
-    ../../modules/vfio-gpu.nix
-    ../../modules/virt-manager.nix
-    ../../modules/wol-vm-start.nix
+    ../../modules/base.nix
+    ../../modules/desktop
+    ../../modules/desktop/gnome
+    ../../modules/boot/initrd-ssh.nix
+    ../../modules/virtualization
     ./hardware-configuration.nix
     ./disk-config.nix
   ];

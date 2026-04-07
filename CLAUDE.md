@@ -31,9 +31,18 @@ nix flake check                      # validate
 ## Module Hierarchy
 
 - `modules/options.nix` — shared `local.*` options (user, sshKey, stateVersion, net, tailnet, locale, etc.)
-- `modules/base.nix` — universal: nix settings, SSH, user, dotfiles, btrfs scrub, hardening
-- `modules/desktop.nix` — desktop-only (imports base.nix): pipewire, keyd, docker, packages
-- Prodesk imports `base.nix` directly; thinkpad/desktop import `desktop.nix`
+- `modules/base.nix` — universal: nix settings, SSH, user, dotfiles, btrfs scrub
+- `modules/hardening.nix` — server hardening: audit, sysctl, kernel module blacklisting
+- `modules/networking.nix` — Tailscale, Caddy, Syncthing, static IP, firewall
+- `modules/samba.nix` — Samba file sharing
+- `modules/desktop/` — desktop-only: pipewire, keyd, docker, packages
+  - `gnome/` — GNOME DE, dconf settings (internal)
+  - `fprintd.nix` — fingerprint auth (exposed, hosts opt in)
+- `modules/home-assistant/` — Home Assistant + lovelace dashboard (internal)
+- `modules/virtualization/` — single import: vfio-gpu, looking-glass, virt-manager, wol-vm-start
+  - Sub-modules with scripts nest in their own directories (e.g. `virt-manager/`, `wol-vm-start/`)
+- `modules/boot/initrd-ssh.nix` — initrd SSH for remote disk unlock
+- Modules never import other top-level modules — hosts wire them together explicitly
 
 ## Code Style
 
