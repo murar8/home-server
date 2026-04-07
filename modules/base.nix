@@ -1,14 +1,16 @@
 {
+  config,
   dotfiles,
   pkgs,
-  vars,
   ...
 }:
 
 {
-  system.stateVersion = vars.stateVersion;
+  system.stateVersion = config.local.stateVersion;
 
-  time.timeZone = "Europe/Madrid";
+  networking.nameservers = config.local.nameservers;
+
+  time.timeZone = config.local.timeZone;
 
   nix = {
     gc = {
@@ -25,10 +27,10 @@
     };
   };
 
-  users.users.${vars.user} = {
+  users.users.${config.local.user} = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
-    openssh.authorizedKeys.keys = [ vars.sshKey ];
+    openssh.authorizedKeys.keys = [ config.local.sshKey ];
   };
 
   programs.bash.loginShellInit = ''
@@ -64,10 +66,10 @@
     # https://wiki.nixos.org/wiki/Systemd_Hardening
     serviceConfig = {
       Type = "oneshot";
-      User = vars.user;
+      User = config.local.user;
       Group = "users";
       ProtectSystem = "strict";
-      ReadWritePaths = [ "/home/${vars.user}" ];
+      ReadWritePaths = [ "/home/${config.local.user}" ];
       ProtectKernelTunables = true;
       ProtectKernelModules = true;
       ProtectKernelLogs = true;

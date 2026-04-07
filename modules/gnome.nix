@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  vars,
   ...
 }:
 
@@ -21,7 +21,7 @@ in
       };
       autoLogin = {
         enable = true;
-        inherit (vars) user;
+        inherit (config.local) user;
       };
     };
     desktopManager.gnome.enable = true;

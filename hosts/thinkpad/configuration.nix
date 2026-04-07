@@ -1,4 +1,4 @@
-{ vars, ... }:
+{ config, ... }:
 
 {
   imports = [
@@ -14,5 +14,5 @@
     networkmanager.enable = true;
   };
 
-  users.users.${vars.user}.extraGroups = [ "networkmanager" ];
+  users.users.${config.local.user}.extraGroups = [ "networkmanager" ];
 }

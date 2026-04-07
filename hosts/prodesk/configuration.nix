@@ -1,9 +1,14 @@
-{ lib, pkgs, ... }:
-
-let
-  inherit (import ./vars.nix) vars;
-in
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+
+{
+  networking.hostName = "prodesk";
+  local.net.ip = "192.168.1.130";
+
   imports = [
     ../../modules/base.nix
     ./hardware-configuration.nix
@@ -27,7 +32,7 @@ in
   };
 
   users.mutableUsers = false;
-  users.users.${vars.user}.hashedPasswordFile = "/persist/etc/secrets/user-password";
+  users.users.${config.local.user}.hashedPasswordFile = "/persist/etc/secrets/user-password";
 
   programs.bash.interactiveShellInit = ''
     HISTFILE="/persist/home/$USER/.bash_history"
@@ -92,7 +97,7 @@ in
           enable = true;
           port = 2222;
           hostKeys = [ "/persist/etc/secrets/initrd/ssh_host_ed25519_key" ];
-          authorizedKeys = [ vars.sshKey ];
+          authorizedKeys = [ config.local.sshKey ];
         };
       };
       systemd = {
@@ -109,10 +114,10 @@ in
         };
         network = {
           enable = true;
-          networks."10-${vars.net.interface}" = {
-            matchConfig.Name = vars.net.interface;
-            address = [ "${vars.net.ip}/${toString vars.net.prefixLength}" ];
-            gateway = [ vars.net.gateway ];
+          networks."10-${config.local.net.interface}" = {
+            matchConfig.Name = config.local.net.interface;
+            address = [ "${config.local.net.ip}/${toString config.local.net.prefixLength}" ];
+            gateway = [ config.local.net.gateway ];
           };
         };
       };

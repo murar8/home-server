@@ -1,28 +1,25 @@
 { config, lib, ... }:
 
 let
-  inherit (import ./vars.nix) vars;
-  fqdn = "${vars.hostname}.${vars.tailnet}";
+  fqdn = "${config.networking.hostName}.${config.local.tailnet}";
   syncthingGuiPort = lib.toInt (lib.last (lib.splitString ":" config.services.syncthing.guiAddress));
 in
 {
   networking = {
-    hostName = vars.hostname;
     useDHCP = false;
-    defaultGateway = vars.net.gateway;
-    inherit (vars.net) nameservers;
-    interfaces.${vars.net.interface} = {
+    defaultGateway = config.local.net.gateway;
+    interfaces.${config.local.net.interface} = {
       ipv4.addresses = [
         {
-          address = vars.net.ip;
-          inherit (vars.net) prefixLength;
+          address = config.local.net.ip;
+          inherit (config.local.net) prefixLength;
         }
       ];
     };
     firewall = {
       trustedInterfaces = [ "tailscale0" ];
       # restrict service ports to physical LAN only
-      interfaces.${vars.net.interface}.allowedTCPPorts = [ syncthingGuiPort ];
+      interfaces.${config.local.net.interface}.allowedTCPPorts = [ syncthingGuiPort ];
     };
   };
 
@@ -32,7 +29,7 @@ in
       useRoutingFeatures = "server";
       permitCertUid = "caddy";
       extraSetFlags = [
-        "--advertise-routes=${vars.net.subnet}/${toString vars.net.prefixLength}"
+        "--advertise-routes=${config.local.net.subnet}/${toString config.local.net.prefixLength}"
         "--advertise-exit-node"
       ];
     };
@@ -48,8 +45,8 @@ in
 
     syncthing = {
       enable = true;
-      inherit (vars) user;
-      dataDir = "/home/${vars.user}";
+      inherit (config.local) user;
+      dataDir = "/home/${config.local.user}";
       openDefaultPorts = true;
       guiAddress = "0.0.0.0:8384";
     };
@@ -60,7 +57,7 @@ in
       "/var/lib/tailscale"
       "/var/lib/caddy"
     ];
-    users.${vars.user}.directories = [
+    users.${config.local.user}.directories = [
       ".config/syncthing"
       "Documents"
     ];
@@ -69,7 +66,17 @@ in
   # https://wiki.nixos.org/wiki/Systemd_Hardening
   # https://man7.org/linux/man-pages/man5/systemd.exec.5.html
   # sandbox caddy: only needs network + its state dir + tailscale socket (read-only)
-  systemd.services.caddy.serviceConfig = vars.serviceHardening // {
+  systemd.services.caddy.serviceConfig = {
+    ProtectKernelTunables = true;
+    ProtectKernelModules = true;
+    ProtectKernelLogs = true;
+    ProtectControlGroups = true;
+    ProtectClock = true;
+    ProtectHostname = true;
+    NoNewPrivileges = true;
+    LockPersonality = true;
+    RestrictRealtime = true;
+    RestrictSUIDSGID = true;
     ProtectSystem = "strict";
     ProtectHome = true;
     ProtectProc = "invisible";

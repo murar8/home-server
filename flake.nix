@@ -47,8 +47,8 @@
       ...
     }:
     let
-      vars = import ./vars.nix;
       commonModules = [
+        ./modules/options.nix
         disko.nixosModules.disko
         lanzaboote.nixosModules.lanzaboote
         {
@@ -71,7 +71,7 @@
       nixosConfigurations = {
         prodesk = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
-          specialArgs = { inherit dotfiles vars; };
+          specialArgs = { inherit dotfiles; };
           modules = commonModules ++ [
             impermanence.nixosModules.impermanence
             ./hosts/prodesk/configuration.nix
@@ -80,13 +80,13 @@
 
         thinkpad = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
-          specialArgs = { inherit dotfiles vars; };
+          specialArgs = { inherit dotfiles; };
           modules = commonModules ++ [ ./hosts/thinkpad/configuration.nix ];
         };
 
         debian = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
-          specialArgs = { inherit dotfiles vars NixVirt; };
+          specialArgs = { inherit dotfiles NixVirt; };
           modules = commonModules ++ [ ./hosts/debian/configuration.nix ];
         };
       };

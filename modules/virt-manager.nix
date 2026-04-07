@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  vars,
   ...
 }:
 
@@ -18,7 +17,7 @@ in
 {
   options.modules.virt-manager.user = lib.mkOption {
     type = lib.types.str;
-    default = vars.user;
+    default = config.local.user;
     description = "User to add to libvirtd and kvm groups.";
   };
 

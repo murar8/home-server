@@ -1,14 +1,13 @@
 { config, ... }:
 
 let
-  inherit (import ./vars.nix) vars;
-  fqdn = "${vars.hostname}.${vars.tailnet}";
+  fqdn = "${config.networking.hostName}.${config.local.tailnet}";
 in
 {
   environment.persistence."/persist".directories = [ "/var/lib/hass" ];
 
   # LAN-only — Tailscale access is via Caddy reverse proxy
-  networking.firewall.interfaces.${vars.net.interface}.allowedTCPPorts = [
+  networking.firewall.interfaces.${config.local.net.interface}.allowedTCPPorts = [
     config.services.home-assistant.config.http.server_port
   ];
 
@@ -27,7 +26,7 @@ in
         name = "Home";
         unit_system = "metric";
         external_url = "https://${fqdn}";
-        internal_url = "http://${vars.net.ip}:${toString config.services.home-assistant.config.http.server_port}";
+        internal_url = "http://${config.local.net.ip}:${toString config.services.home-assistant.config.http.server_port}";
       };
       http = {
         use_x_forwarded_for = true;

@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  vars,
   ...
 }:
 
@@ -11,18 +11,15 @@
   nixpkgs.config.allowUnfree = true;
 
   i18n = {
-    defaultLocale = "es_ES.UTF-8";
-    supportedLocales = [
-      "es_ES.UTF-8/UTF-8"
-      "en_US.UTF-8/UTF-8"
-    ];
+    defaultLocale = config.local.locale;
+    inherit (config.local) supportedLocales;
   };
 
   console.keyMap = "us";
 
   services.xserver.xkb.layout = "us";
 
-  users.users.${vars.user}.extraGroups = [ "docker" ];
+  users.users.${config.local.user}.extraGroups = [ "docker" ];
 
   boot = {
     initrd.systemd = {
@@ -88,13 +85,13 @@
 
     tailscale = {
       enable = true;
-      extraSetFlags = [ "--operator=${vars.user}" ];
+      extraSetFlags = [ "--operator=${config.local.user}" ];
     };
 
     syncthing = {
       enable = true;
-      inherit (vars) user;
-      dataDir = "/home/${vars.user}";
+      inherit (config.local) user;
+      dataDir = "/home/${config.local.user}";
       openDefaultPorts = true;
       systemService = false;
     };

@@ -1,9 +1,4 @@
-{
-  config,
-  lib,
-  vars,
-  ...
-}:
+{ config, lib, ... }:
 
 let
   cfg = config.modules.initrd-ssh;
@@ -13,7 +8,7 @@ in
   options.modules.initrd-ssh = {
     user = lib.mkOption {
       type = lib.types.str;
-      default = vars.user;
+      default = config.local.user;
       description = "User whose SSH authorized keys are used for initrd access.";
     };
     hostKeys = lib.mkOption {

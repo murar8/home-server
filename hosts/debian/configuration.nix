@@ -1,9 +1,4 @@
-{
-  pkgs,
-  vars,
-  NixVirt,
-  ...
-}:
+{ pkgs, NixVirt, ... }:
 
 let
   vmXML = vm: NixVirt.lib.domain.writeXML (import vm NixVirt.lib.xml);
@@ -30,7 +25,6 @@ in
     useNetworkd = true;
     networkmanager.enable = false;
     firewall.allowedUDPPorts = [ 9 ]; # WoL magic packets for VM auto-start
-    inherit (vars) nameservers;
   };
 
   systemd.network = {

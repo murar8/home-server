@@ -1,8 +1,18 @@
-_:
+{ config, ... }:
 
 let
-  inherit (import ./vars.nix) vars;
-  sambaHardening = vars.serviceHardening // {
+  # https://wiki.nixos.org/wiki/Systemd_Hardening
+  sambaHardening = {
+    ProtectKernelTunables = true;
+    ProtectKernelModules = true;
+    ProtectKernelLogs = true;
+    ProtectControlGroups = true;
+    ProtectClock = true;
+    ProtectHostname = true;
+    NoNewPrivileges = true;
+    LockPersonality = true;
+    RestrictRealtime = true;
+    RestrictSUIDSGID = true;
     ProtectSystem = "full";
     ProtectHome = true;
   };
@@ -17,17 +27,17 @@ in
       settings = {
         global = {
           "workgroup" = "WORKGROUP";
-          "server string" = vars.hostname;
-          "netbios name" = vars.hostname;
+          "server string" = config.networking.hostName;
+          "netbios name" = config.networking.hostName;
           "security" = "user";
           "server min protocol" = "SMB3";
           "server smb encrypt" = "required";
-          "hosts allow" = "${vars.net.subnetPrefix} 127.0.0.1 localhost";
+          "hosts allow" = "${config.local.net.subnetPrefix} 127.0.0.1 localhost";
           "hosts deny" = "0.0.0.0/0";
         };
         share = {
           path = "/share";
-          "valid users" = vars.user;
+          "valid users" = config.local.user;
           writable = "yes";
           "create mask" = "0644";
           "directory mask" = "0755";
@@ -42,10 +52,10 @@ in
 
   environment.persistence."/persist".directories = [ "/var/lib/samba" ];
 
-  systemd.tmpfiles.rules = [ "d /share 0755 ${vars.user} users -" ];
+  systemd.tmpfiles.rules = [ "d /share 0755 ${config.local.user} users -" ];
 
   # LAN-only — not exposed on Tailscale
-  networking.firewall.interfaces.${vars.net.interface} = {
+  networking.firewall.interfaces.${config.local.net.interface} = {
     allowedTCPPorts = [
       139
       445
