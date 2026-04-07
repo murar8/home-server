@@ -32,7 +32,11 @@ in
 
     systemd = {
       services.libvirtd.serviceConfig.LimitMEMLOCK = "infinity";
-      tmpfiles.rules = [ "L+ /var/lib/qemu/firmware - - - - ${pkgs.qemu}/share/qemu/firmware" ];
+      tmpfiles.rules = [
+        # nocow on VM images dir — new files inherit +C (btrfs CoW-on-CoW avoidance)
+        "h /var/lib/libvirt/images - - - - +C"
+        "L+ /var/lib/qemu/firmware - - - - ${pkgs.qemu}/share/qemu/firmware"
+      ];
       services."vm-inhibit-suspend@" = {
         description = "Inhibit suspend while libvirt VM %i is running";
         serviceConfig = {

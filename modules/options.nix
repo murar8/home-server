@@ -87,7 +87,6 @@
           interface = lib.mkOption {
             description = "Network interface name.";
             type = lib.types.str;
-            default = "enp1s0";
           };
         };
       };

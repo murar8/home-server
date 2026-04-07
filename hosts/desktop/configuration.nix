@@ -10,7 +10,11 @@ in
     ../../modules/desktop
     ../../modules/desktop/gnome
     ../../modules/boot/initrd-ssh.nix
-    ../../modules/virtualization
+    ../../modules/bridge-networking.nix
+    ../../modules/virtualization/vfio-gpu.nix
+    ../../modules/virtualization/looking-glass.nix
+    ../../modules/virtualization/virt-manager
+    ../../modules/virtualization/wol-vm-start
     ./hardware-configuration.nix
     ./disk-config.nix
   ];
@@ -18,37 +22,9 @@ in
   # TODO: revert to default when IOMMU group regression in 6.12.75+ is fixed (commit 7a126c1b6cfa)
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  networking = {
-    hostName = "desktop";
-    useNetworkd = true;
-    networkmanager.enable = false;
-    firewall.allowedUDPPorts = [ 9 ]; # WoL magic packets for VM auto-start
-  };
-
-  systemd.network = {
-    links."20-enp5s0" = {
-      matchConfig.OriginalName = "enp5s0";
-      linkConfig.WakeOnLan = "magic";
-    };
-    netdevs."20-br0".netdevConfig = {
-      Name = "br0";
-      Kind = "bridge";
-    };
-    networks = {
-      "20-enp5s0" = {
-        matchConfig.Name = "enp5s0";
-        networkConfig.Bridge = "br0";
-      };
-      "20-br0" = {
-        matchConfig.Name = "br0";
-        address = [ "192.168.1.60/24" ];
-        gateway = [ "192.168.1.1" ];
-      };
-    };
-  };
-
-  # nocow on VM images dir — new files inherit +C (btrfs CoW-on-CoW avoidance)
-  systemd.tmpfiles.rules = [ "h /var/lib/libvirt/images - - - - +C" ];
+  networking.hostName = "desktop";
+  local.net.ip = "192.168.1.60";
+  local.net.interface = "enp5s0";
 
   virtualisation.libvirt = {
     enable = true;
@@ -72,11 +48,5 @@ in
       "10de:10f0" # GTX 1070 Audio
       "1022:15b7" # USB controller (passthrough to VM)
     ];
-    wol-vm-start.enable = true;
-    initrd-ssh = {
-      interface = "enp5s0";
-      address = [ "192.168.1.60/24" ];
-      gateway = [ "192.168.1.1" ];
-    };
   };
 }

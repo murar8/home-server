@@ -6,6 +6,13 @@
 }:
 
 {
+  environment.systemPackages = with pkgs; [
+    git
+    nano
+    neovim
+    rsync
+  ];
+
   system.stateVersion = config.local.stateVersion;
 
   networking.nameservers = config.local.nameservers;

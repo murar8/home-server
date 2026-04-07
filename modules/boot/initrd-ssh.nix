@@ -21,24 +21,19 @@ in
       default = 2222;
       description = "SSH port during initrd.";
     };
-    interface = lib.mkOption {
-      type = lib.types.str;
-      description = "Network interface for initrd networking.";
-    };
-    address = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      description = "Static IP addresses with prefix length (e.g. [\"192.168.1.60/24\"]).";
-    };
-    gateway = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      description = "Default gateways.";
-    };
     authorizedKeys = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = config.users.users.${cfg.user}.openssh.authorizedKeys.keys;
       description = "SSH public keys authorized during initrd.";
     };
   };
+
+  config.assertions = [
+    {
+      assertion = config.boot.initrd.systemd.enable;
+      message = "initrd-ssh requires systemd initrd.";
+    }
+  ];
 
   config.boot.initrd = {
     network = {
@@ -52,9 +47,10 @@ in
       users.root.shell = "/bin/systemd-tty-ask-password-agent";
       network = {
         enable = true;
-        networks."10-${cfg.interface}" = {
-          matchConfig.Name = cfg.interface;
-          inherit (cfg) address gateway;
+        networks."10-${config.local.net.interface}" = {
+          matchConfig.Name = config.local.net.interface;
+          address = [ "${config.local.net.ip}/${toString config.local.net.prefixLength}" ];
+          gateway = [ config.local.net.gateway ];
         };
       };
     };
