@@ -84,10 +84,10 @@
           modules = commonModules ++ [ ./hosts/thinkpad/configuration.nix ];
         };
 
-        debian = nixpkgs.lib.nixosSystem {
+        desktop = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit dotfiles NixVirt; };
-          modules = commonModules ++ [ ./hosts/debian/configuration.nix ];
+          modules = commonModules ++ [ ./hosts/desktop/configuration.nix ];
         };
       };
 

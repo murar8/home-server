@@ -1,4 +1,4 @@
-# Generated from nixos-generate-config on Debian desktop
+# Generated from nixos-generate-config on desktop
 # CPU: AMD Raphael/Granite Ridge (kvm-amd) | GPU: NVIDIA GTX 1070 + AMD Radeon iGPU
 # NVMe: Crucial P310 1TB | NIC: Realtek RTL8126 5GbE
 { config, lib, ... }:

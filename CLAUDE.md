@@ -1,24 +1,24 @@
 # NixOS Machines
 
-Multi-host NixOS flake: Prodesk (home server), ThinkPad (laptop), Debian (desktop).
+Multi-host NixOS flake: Prodesk (home server), ThinkPad (laptop), Desktop (AMD workstation).
 
 ## Hosts
 
 - **Prodesk** (`prodesk`, 192.168.1.130) — HP ProDesk 400 G3 SFF, NixOS 25.11, impermanence
 - **ThinkPad** (`thinkpad`, 192.168.1.141) — ThinkPad L15 Gen 2a, GNOME
-- **Debian** (`debian`, 192.168.1.60) — AMD desktop, VFIO GPU passthrough
+- **Desktop** (`desktop`, 192.168.1.60) — AMD desktop, VFIO GPU passthrough
 - `prodesk-unlock` — initrd LUKS unlock (port 2222)
 
 ## Commands
 
 ```sh
-# Debian (local — needs interactive terminal)
-sudo nixos-rebuild switch --flake .#debian
+# Desktop (local — needs interactive terminal)
+sudo nixos-rebuild switch --flake .#desktop
 
 # ThinkPad (local — needs interactive terminal)
 nixos-rebuild switch --flake .#thinkpad --sudo
 
-# Prodesk (remote from debian — needs interactive terminal)
+# Prodesk (remote from desktop — needs interactive terminal)
 nixos-rebuild switch --flake .#prodesk \
   --target-host prodesk --build-host prodesk --ask-sudo-password
 
@@ -30,11 +30,10 @@ nix flake check                      # validate
 
 ## Module Hierarchy
 
-- `vars.nix` — flake-level shared vars (user, sshKey, stateVersion, nameservers), passed via `specialArgs`
+- `modules/options.nix` — shared `local.*` options (user, sshKey, stateVersion, net, tailnet, locale, etc.)
 - `modules/base.nix` — universal: nix settings, SSH, user, dotfiles, btrfs scrub, hardening
 - `modules/desktop.nix` — desktop-only (imports base.nix): pipewire, keyd, docker, packages
-- `hosts/prodesk/vars.nix` — inherits shared vars, adds host-specific (net, tailnet, serviceHardening)
-- Prodesk imports `base.nix` directly; thinkpad/debian import `desktop.nix`
+- Prodesk imports `base.nix` directly; thinkpad/desktop import `desktop.nix`
 
 ## Code Style
 

@@ -4,7 +4,7 @@ NixOS configurations for personal machines:
 
 - **Prodesk** — HP ProDesk 400 G3 SFF (i5-6500), home server with Home Assistant, Samba, Caddy, Syncthing, Tailscale, impermanence
 - **ThinkPad L15 Gen 2a** — AMD Ryzen 5 PRO 5650U, 512GB NVMe
-- **Debian desktop** — AMD Raphael/Granite Ridge, GTX 1070, 1TB NVMe
+- **Desktop** — AMD Raphael/Granite Ridge, GTX 1070, 1TB NVMe
 
 ## Features
 

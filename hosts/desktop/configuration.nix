@@ -21,7 +21,7 @@ in
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
   networking = {
-    hostName = "debian";
+    hostName = "desktop";
     useNetworkd = true;
     networkmanager.enable = false;
     firewall.allowedUDPPorts = [ 9 ]; # WoL magic packets for VM auto-start
