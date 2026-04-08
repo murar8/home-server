@@ -18,6 +18,10 @@
       url = "github:nix-community/lanzaboote/v1.0.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    blueprint = {
+      url = "github:numtide/blueprint";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -32,90 +36,5 @@
     };
   };
 
-  outputs =
-    {
-      self,
-      nixpkgs,
-      neovim-bin,
-      disko,
-      lanzaboote,
-      impermanence,
-      NixVirt,
-      dotfiles,
-      treefmt-nix,
-      git-hooks,
-      ...
-    }:
-    let
-      commonModules = [
-        ./modules/options.nix
-        disko.nixosModules.disko
-        lanzaboote.nixosModules.lanzaboote
-        {
-          nixpkgs.overlays = [
-            (_: prev: {
-              neovim = prev.stdenv.mkDerivation {
-                pname = "neovim";
-                version = "0.12.0";
-                src = neovim-bin;
-                nativeBuildInputs = [ prev.autoPatchelfHook ];
-                buildInputs = [ prev.stdenv.cc.cc.lib ];
-                installPhase = "cp -r . $out";
-              };
-            })
-          ];
-        }
-      ];
-    in
-    {
-      nixosConfigurations = {
-        prodesk = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          specialArgs = { inherit dotfiles; };
-          modules = commonModules ++ [
-            impermanence.nixosModules.impermanence
-            ./hosts/prodesk/configuration.nix
-          ];
-        };
-
-        thinkpad = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          specialArgs = { inherit dotfiles; };
-          modules = commonModules ++ [ ./hosts/thinkpad/configuration.nix ];
-        };
-
-        desktop = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          specialArgs = { inherit dotfiles NixVirt; };
-          modules = commonModules ++ [ ./hosts/desktop/configuration.nix ];
-        };
-      };
-
-      formatter.x86_64-linux =
-        (treefmt-nix.lib.evalModule nixpkgs.legacyPackages.x86_64-linux ./treefmt.nix).config.build.wrapper;
-
-      checks.x86_64-linux.git-hooks = git-hooks.lib.x86_64-linux.run {
-        src = ./.;
-        hooks = {
-          statix.enable = true;
-          markdownlint.enable = true;
-          nil = {
-            enable = true;
-            settings.denyWarnings = true;
-          };
-          treefmt = {
-            enable = true;
-            package = self.formatter.x86_64-linux;
-          };
-        };
-      };
-
-      devShells.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.mkShell {
-        inherit (self.checks.x86_64-linux.git-hooks) shellHook;
-        packages = with nixpkgs.legacyPackages.x86_64-linux; [
-          statix
-          nil
-        ];
-      };
-    };
+  outputs = inputs: inputs.blueprint { inherit inputs; };
 }

@@ -1,12 +1,13 @@
-_:
+{ flake, ... }:
 
 {
   imports = [
-    ../../modules/base.nix
-    ../../modules/desktop
-    ../../modules/desktop/gnome
-    ../../modules/desktop/fprintd.nix
-    ../../modules/networkmanager.nix
+    flake.modules.nixos.common
+    flake.modules.nixos.base
+    flake.modules.nixos.desktop
+    flake.modules.nixos.gnome
+    flake.modules.nixos.fprintd
+    flake.modules.nixos.networkmanager
     ./hardware-configuration.nix
     ./disk-config.nix
   ];

@@ -1,6 +1,6 @@
 {
   config,
-  dotfiles,
+  inputs,
   pkgs,
   ...
 }:
@@ -102,6 +102,6 @@
       git
       openssh
     ];
-    script = builtins.readFile "${dotfiles}/.bootstrap";
+    script = builtins.readFile "${inputs.dotfiles}/.bootstrap";
   };
 }

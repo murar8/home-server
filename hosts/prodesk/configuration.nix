@@ -1,4 +1,4 @@
-_:
+{ inputs, flake, ... }:
 
 {
   networking.hostName = "prodesk";
@@ -6,15 +6,17 @@ _:
   local.net.interface = "enp1s0";
 
   imports = [
-    ../../modules/base.nix
-    ../../modules/auto-upgrade.nix
-    ../../modules/hardening.nix
-    ../../modules/home-assistant
-    ../../modules/impermanence
-    ../../modules/boot/initrd-ssh.nix
-    ../../modules/networking.nix
-    ../../modules/samba.nix
-    ../../modules/secure-boot.nix
+    flake.modules.nixos.common
+    flake.modules.nixos.base
+    flake.modules.nixos.auto-upgrade
+    flake.modules.nixos.hardening
+    flake.modules.nixos.home-assistant
+    flake.modules.nixos.impermanence
+    flake.modules.nixos.initrd-ssh
+    flake.modules.nixos.networking
+    flake.modules.nixos.samba
+    flake.modules.nixos.secure-boot
+    inputs.impermanence.nixosModules.impermanence
     ./hardware-configuration.nix
     ./disk-config.nix
   ];

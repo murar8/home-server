@@ -1,20 +1,26 @@
-{ pkgs, NixVirt, ... }:
+{
+  pkgs,
+  inputs,
+  flake,
+  ...
+}:
 
 let
-  vmXML = vm: NixVirt.lib.domain.writeXML (import vm NixVirt.lib.xml);
+  vmXML = vm: inputs.NixVirt.lib.domain.writeXML (import vm inputs.NixVirt.lib.xml);
 in
 {
   imports = [
-    NixVirt.nixosModules.default
-    ../../modules/base.nix
-    ../../modules/desktop
-    ../../modules/desktop/gnome
-    ../../modules/boot/initrd-ssh.nix
-    ../../modules/bridge-networking.nix
-    ../../modules/virtualization/vfio-gpu.nix
-    ../../modules/virtualization/looking-glass.nix
-    ../../modules/virtualization/virt-manager
-    ../../modules/virtualization/wol-vm-start
+    inputs.NixVirt.nixosModules.default
+    flake.modules.nixos.common
+    flake.modules.nixos.base
+    flake.modules.nixos.desktop
+    flake.modules.nixos.gnome
+    flake.modules.nixos.initrd-ssh
+    flake.modules.nixos.bridge-networking
+    flake.modules.nixos.vfio-gpu
+    flake.modules.nixos.looking-glass
+    flake.modules.nixos.virt-manager
+    flake.modules.nixos.wol-vm-start
     ./hardware-configuration.nix
     ./disk-config.nix
   ];
