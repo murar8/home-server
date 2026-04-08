@@ -1,6 +1,7 @@
-{ config, ... }:
+{ config, inputs, ... }:
 
 {
+  imports = [ inputs.impermanence.nixosModules.impermanence ];
   assertions = [
     {
       assertion = config.boot.initrd.systemd.enable;

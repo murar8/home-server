@@ -1,13 +1,14 @@
 # Shared base for VFIO GPU passthrough Windows 11 VMs.
-# Takes per-VM params and returns a NixVirt domain definition set.
+# Takes inputs, then per-VM params, and returns a NixVirt domain XML derivation.
+{ NixVirt }:
+
 {
-  xml,
   name,
   uuid,
   memory, # in KiB
-  disks,
+  bootDisk, # { dev, file }
+  extraDisks ? [ ], # [{ dev, file }]
   macAddress,
-  nvramPath,
   kvmfrSizeMB ? 256,
 }:
 
@@ -30,14 +31,33 @@ let
     };
   };
 
+  mkDisk =
+    { dev, file }:
+    {
+      type = "file";
+      device = "disk";
+      driver = {
+        name = "qemu";
+        type = "raw";
+        cache = "none";
+        io = "native";
+        discard = "unmap";
+      };
+      source = { inherit file; };
+      target = {
+        inherit dev;
+        bus = "virtio";
+      };
+    };
+
   # Pin vcpus to all cores except 0 and 8 (reserved for emulator)
   cpusets = builtins.filter (c: c != 0 && c != 8) (builtins.genList (i: i) 16);
 in
-{
+NixVirt.lib.domain.writeXML {
   type = "kvm";
   inherit name uuid;
 
-  metadata = with xml; [
+  metadata = with NixVirt.lib.xml; [
     (elem "libosinfo:libosinfo"
       [ (attr "xmlns:libosinfo" "http://libosinfo.org/xmlns/libvirt/domain/1.0") ]
       [ (elem "libosinfo:os" [ (attr "id" "http://microsoft.com/win/11") ] [ ]) ]
@@ -75,7 +95,7 @@ in
     arch = "x86_64";
     machine = "pc-q35-10.0";
     nvram = {
-      path = nvramPath;
+      path = "/var/lib/libvirt/qemu/nvram/${name}_VARS.fd";
     };
     smbios = {
       mode = "host";
@@ -220,7 +240,7 @@ in
   devices = {
     emulator = "/run/current-system/sw/bin/qemu-system-x86_64";
 
-    disk = disks;
+    disk = [ (mkDisk bootDisk // { boot.order = 1; }) ] ++ map mkDisk extraDisks;
 
     controller = [
       {

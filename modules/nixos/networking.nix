@@ -2,7 +2,7 @@
 
 let
   fqdn = "${config.networking.hostName}.${config.local.tailnet}";
-  syncthingGuiPort = lib.toInt (lib.last (lib.splitString ":" config.services.syncthing.guiAddress));
+  syncthingGuiPort = 8384;
 in
 {
   networking = {
@@ -36,10 +36,12 @@ in
 
     caddy = {
       enable = true;
-      virtualHosts.${fqdn} = {
-        extraConfig = ''
-          reverse_proxy 127.0.0.1:${toString config.services.home-assistant.config.http.server_port}
-        '';
+      virtualHosts = lib.optionalAttrs config.services.home-assistant.enable {
+        ${fqdn} = {
+          extraConfig = ''
+            reverse_proxy 127.0.0.1:${toString config.services.home-assistant.config.http.server_port}
+          '';
+        };
       };
     };
 
@@ -48,7 +50,7 @@ in
       inherit (config.local) user;
       dataDir = "/home/${config.local.user}";
       openDefaultPorts = true;
-      guiAddress = "0.0.0.0:8384";
+      guiAddress = "0.0.0.0:${toString syncthingGuiPort}";
     };
   };
 

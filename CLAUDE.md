@@ -30,19 +30,21 @@ nix flake check                      # validate
 
 ## Module Hierarchy
 
-- `modules/options.nix` — shared `local.*` options (user, sshKey, stateVersion, net, tailnet, locale, etc.)
-- `modules/base.nix` — universal: nix settings, SSH, user, dotfiles, btrfs scrub
-- `modules/hardening.nix` — server hardening: audit, sysctl, kernel module blacklisting
-- `modules/networking.nix` — Tailscale, Caddy, Syncthing, static IP, firewall
-- `modules/samba.nix` — Samba file sharing
-- `modules/desktop/` — desktop-only: pipewire, keyd, docker, packages
-  - `gnome/` — GNOME DE, dconf settings (internal)
-  - `fprintd.nix` — fingerprint auth (exposed, hosts opt in)
-- `modules/home-assistant/` — Home Assistant + lovelace dashboard (internal)
-- `modules/virtualization/` — single import: vfio-gpu, looking-glass, virt-manager, wol-vm-start
-  - Sub-modules with scripts nest in their own directories (e.g. `virt-manager/`, `wol-vm-start/`)
-- `modules/boot/initrd-ssh.nix` — initrd SSH for remote disk unlock
-- Modules never import other top-level modules — hosts wire them together explicitly
+Flake uses [numtide/blueprint](https://github.com/numtide/blueprint) for convention-based output generation. Modules live in `modules/nixos/` and are auto-discovered as `flake.modules.nixos.<name>`. Host configs use `flake.modules.nixos.*` and `inputs.*` instead of relative paths.
+
+- `modules/nixos/common.nix` — foundation: imports `options`, `base`, disko, lanzaboote, neovim overlay (all hosts import this)
+- `modules/nixos/options.nix` — shared `local.*` options (user, sshKey, stateVersion, net, tailnet, locale, etc.)
+- `modules/nixos/base.nix` — universal: nix settings, SSH, user, dotfiles, btrfs scrub
+- `modules/nixos/hardening.nix` — server hardening: audit, sysctl, kernel module blacklisting
+- `modules/nixos/networking.nix` — Tailscale, Caddy, Syncthing, static IP, firewall
+- `modules/nixos/samba.nix` — Samba file sharing
+- `modules/nixos/desktop/` — desktop-only: pipewire, keyd, docker, packages
+- `modules/nixos/gnome/` — GNOME DE, dconf settings (internal)
+- `modules/nixos/fprintd.nix` — fingerprint auth (exposed, hosts opt in)
+- `modules/nixos/home-assistant/` — Home Assistant + lovelace dashboard (internal)
+- `modules/nixos/vfio-gpu.nix`, `looking-glass.nix`, `virt-manager/`, `wol-vm-start/` — virtualization
+- `modules/nixos/initrd-ssh.nix` — initrd SSH for remote disk unlock
+- Only `common.nix` may import other modules; all other modules are wired by hosts explicitly
 
 ## Code Style
 

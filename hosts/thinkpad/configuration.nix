@@ -3,7 +3,6 @@
 {
   imports = [
     flake.modules.nixos.common
-    flake.modules.nixos.base
     flake.modules.nixos.desktop
     flake.modules.nixos.gnome
     flake.modules.nixos.fprintd

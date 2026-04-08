@@ -5,14 +5,10 @@
   ...
 }:
 
-let
-  vmXML = vm: inputs.NixVirt.lib.domain.writeXML (import vm inputs.NixVirt.lib.xml);
-in
 {
   imports = [
     inputs.NixVirt.nixosModules.default
     flake.modules.nixos.common
-    flake.modules.nixos.base
     flake.modules.nixos.desktop
     flake.modules.nixos.gnome
     flake.modules.nixos.initrd-ssh
@@ -35,16 +31,46 @@ in
   virtualisation.libvirt = {
     enable = true;
     swtpm.enable = true;
-    connections."qemu:///system".domains = [
-      {
-        definition = vmXML ../../vms/windows11.nix;
-        active = null;
-      }
-      {
-        definition = vmXML ../../vms/windows11-cracked.nix;
-        active = null;
-      }
-    ];
+    connections."qemu:///system".domains =
+      map
+        (vm: {
+          definition = flake.lib.mkWindowsVM vm;
+          active = null;
+        })
+        [
+          {
+            name = "windows11";
+            uuid = "10ef27aa-3f96-4ea1-a59b-eac6f6254132";
+            memory = 16777216;
+            macAddress = "52:54:00:43:9b:df";
+            bootDisk = {
+              dev = "vda";
+              file = "/var/lib/libvirt/images/windows-11.img";
+            };
+            extraDisks = [
+              {
+                dev = "vdb";
+                file = "/var/lib/libvirt/images/rocket-league.img";
+              }
+            ];
+          }
+          {
+            name = "windows11-cracked";
+            uuid = "8f37e9b3-b296-4762-b77e-e6d0b36b2da9";
+            memory = 12582912;
+            macAddress = "52:54:00:a2:81:16";
+            bootDisk = {
+              dev = "vda";
+              file = "/var/lib/libvirt/images/windows-11-clone.img";
+            };
+            extraDisks = [
+              {
+                dev = "vdb";
+                file = "/var/lib/libvirt/images/data.img";
+              }
+            ];
+          }
+        ];
   };
 
   modules = {

@@ -6,7 +6,7 @@
 }:
 
 inputs.git-hooks.lib.${system}.run {
-  src = flake;
+  src = flake; # blueprint passes flake = self; coerced to source path
   hooks = {
     statix.enable = true;
     markdownlint.enable = true;
