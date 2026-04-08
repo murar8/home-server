@@ -3,7 +3,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     impermanence.url = "github:nix-community/impermanence";
     neovim-bin = {
-      url = "https://github.com/neovim/neovim/releases/download/v0.12.0/nvim-linux-x86_64.tar.gz";
+      url = "https://github.com/neovim/neovim/releases/download/v0.12.1/nvim-linux-x86_64.tar.gz";
       flake = false;
     };
     dotfiles = {
@@ -31,7 +31,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     NixVirt = {
-      url = "https://flakehub.com/f/AshleyYakeley/NixVirt/*.tar.gz";
+      url = "https://flakehub.com/f/AshleyYakeley/NixVirt/0.6.0.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

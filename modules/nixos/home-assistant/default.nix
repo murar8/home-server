@@ -1,12 +1,16 @@
-{ config, ... }:
+{ config, lib, ... }:
 
 let
   fqdn = "${config.networking.hostName}.${config.local.tailnet}";
 in
 {
-  imports = [ ./caddy.nix ];
-
   environment.persistence."/persist".directories = [ "/var/lib/hass" ];
+
+  services.caddy.virtualHosts = lib.mkIf config.services.caddy.enable {
+    ${fqdn}.extraConfig = ''
+      reverse_proxy 127.0.0.1:${toString config.services.home-assistant.config.http.server_port}
+    '';
+  };
 
   # LAN-only — Tailscale access is via Caddy reverse proxy
   networking.firewall.interfaces.${config.local.net.interface}.allowedTCPPorts = [

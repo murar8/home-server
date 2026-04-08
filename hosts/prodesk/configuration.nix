@@ -4,6 +4,7 @@
   imports = [
     flake.modules.nixos.common
     flake.modules.nixos.auto-upgrade
+    flake.modules.nixos.caddy
     flake.modules.nixos.hardening
     flake.modules.nixos.home-assistant
     flake.modules.nixos.impermanence

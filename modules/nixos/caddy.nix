@@ -1,17 +1,7 @@
-{ config, ... }:
-
-let
-  fqdn = "${config.networking.hostName}.${config.local.tailnet}";
-in
-{
+_: {
   environment.persistence."/persist".directories = [ "/var/lib/caddy" ];
 
-  services.caddy = {
-    enable = true;
-    virtualHosts.${fqdn}.extraConfig = ''
-      reverse_proxy 127.0.0.1:${toString config.services.home-assistant.config.http.server_port}
-    '';
-  };
+  services.caddy.enable = true;
 
   # https://wiki.nixos.org/wiki/Systemd_Hardening
   # https://man7.org/linux/man-pages/man5/systemd.exec.5.html

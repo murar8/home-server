@@ -16,7 +16,7 @@
       },
       "original": {
         "type": "tarball",
-        "url": "https://flakehub.com/f/AshleyYakeley/NixVirt/%2A.tar.gz"
+        "url": "https://flakehub.com/f/AshleyYakeley/NixVirt/0.6.0.tar.gz"
       }
     },
     "blueprint": {
@@ -255,14 +255,14 @@
     "neovim-bin": {
       "flake": false,
       "locked": {
-        "lastModified": 1774804113,
-        "narHash": "sha256-QQXNmoS4VFZK4NelDFkYv5sTy/m0zDG0QMPMskP8wiw=",
+        "lastModified": 1775485309,
+        "narHash": "sha256-V6Cu0JXoNuCIwOuLwy8tAWZcX+aEjgRWi9zWlCY2TRc=",
         "type": "tarball",
-        "url": "https://github.com/neovim/neovim/releases/download/v0.12.0/nvim-linux-x86_64.tar.gz"
+        "url": "https://github.com/neovim/neovim/releases/download/v0.12.1/nvim-linux-x86_64.tar.gz"
       },
       "original": {
         "type": "tarball",
-        "url": "https://github.com/neovim/neovim/releases/download/v0.12.0/nvim-linux-x86_64.tar.gz"
+        "url": "https://github.com/neovim/neovim/releases/download/v0.12.1/nvim-linux-x86_64.tar.gz"
       }
     },
     "nixpkgs": {
