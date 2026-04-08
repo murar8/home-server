@@ -11,7 +11,12 @@ in
   };
 
   config = {
-    networking.useNetworkd = true;
+    assertions = [
+      {
+        assertion = config.networking.useNetworkd;
+        message = "bridge-networking requires systemd-networkd (networking.useNetworkd).";
+      }
+    ];
 
     systemd.network = {
       links."20-${config.local.net.interface}" = {
@@ -26,6 +31,9 @@ in
         "20-${config.local.net.interface}" = {
           matchConfig.Name = config.local.net.interface;
           networkConfig.Bridge = cfg.name;
+          # Override static-ip defaults — address/gateway move to the bridge
+          address = [ ];
+          gateway = [ ];
         };
         "20-${cfg.name}" = {
           matchConfig.Name = cfg.name;
