@@ -1,9 +1,4 @@
-{
-  config,
-  inputs,
-  pkgs,
-  ...
-}:
+{ config, pkgs, ... }:
 
 {
   environment.systemPackages = with pkgs; [
@@ -40,68 +35,46 @@
     openssh.authorizedKeys.keys = [ config.local.sshKey ];
   };
 
+  security.sudo.extraConfig = "Defaults timestamp_timeout=30";
+
   programs.bash.loginShellInit = ''
     [ -f ~/.bashrc ] && . ~/.bashrc
   '';
 
-  services = {
-    btrfs.autoScrub.enable = true;
+  environment.sessionVariables.PATH = [ "$HOME/.local/bin" ];
 
-    openssh = {
-      enable = true;
-      settings = {
-        PermitRootLogin = "no";
-        PasswordAuthentication = false;
-        # https://xeiaso.net/blog/paranoid-nixos-2021-07-18/
-        # https://man.openbsd.org/sshd_config
-        # prevent a compromised session from being used as a network tunnel
-        AllowTcpForwarding = false;
-        AllowStreamLocalForwarding = false;
-        # https://man.openbsd.org/sshd_config#ClientAliveInterval
-        # drop idle sessions after ~10 min (interval × countMax); does not affect initrd SSH
-        ClientAliveInterval = 300;
-        ClientAliveCountMax = 2;
+  i18n = {
+    defaultLocale = config.local.locale;
+    inherit (config.local) supportedLocales;
+  };
+
+  console.keyMap = config.local.keyMap;
+
+  services.xserver.xkb.layout = config.local.keyMap;
+
+  boot = {
+    initrd.systemd.enable = true;
+    loader.timeout = 1;
+    tmp.useTmpfs = true;
+    # TODO: remove when nixpkgs#494001 is backported to nixos-25.11
+    initrd.systemd.tmpfiles.settings."50-envfs" = {
+      "/sysroot/usr/bin".d = {
+        group = "root";
+        mode = "0755";
+        user = "root";
+      };
+      "/sysroot/bin".d = {
+        group = "root";
+        mode = "0755";
+        user = "root";
       };
     };
   };
 
-  systemd.services.dotfiles-checkout = {
-    description = "Checkout dotfiles into home directory";
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    wantedBy = [ "multi-user.target" ];
-    # https://wiki.nixos.org/wiki/Systemd_Hardening
-    serviceConfig = {
-      Type = "oneshot";
-      User = config.local.user;
-      Group = "users";
-      ProtectSystem = "strict";
-      ReadWritePaths = [ "/home/${config.local.user}" ];
-      ProtectKernelTunables = true;
-      ProtectKernelModules = true;
-      ProtectKernelLogs = true;
-      ProtectControlGroups = true;
-      ProtectClock = true;
-      ProtectHostname = true;
-      PrivateDevices = true;
-      PrivateTmp = true;
-      NoNewPrivileges = true;
-      LockPersonality = true;
-      RestrictRealtime = true;
-      RestrictSUIDSGID = true;
-      RestrictNamespaces = true;
-      RestrictAddressFamilies = [
-        "AF_UNIX"
-        "AF_INET"
-        "AF_INET6"
-      ];
-      SystemCallArchitectures = "native";
-      CapabilityBoundingSet = "";
-    };
-    path = with pkgs; [
-      git
-      openssh
-    ];
-    script = builtins.readFile "${inputs.dotfiles}/.bootstrap";
+  services = {
+    btrfs.autoScrub.enable = true;
+    envfs.enable = true;
+    fwupd.enable = true;
   };
+
 }

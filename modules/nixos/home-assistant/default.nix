@@ -4,6 +4,8 @@ let
   fqdn = "${config.networking.hostName}.${config.local.tailnet}";
 in
 {
+  imports = [ ./caddy.nix ];
+
   environment.persistence."/persist".directories = [ "/var/lib/hass" ];
 
   # LAN-only — Tailscale access is via Caddy reverse proxy

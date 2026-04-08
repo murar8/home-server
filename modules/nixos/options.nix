@@ -32,6 +32,12 @@
       default = "es_ES.UTF-8";
     };
 
+    keyMap = lib.mkOption {
+      description = "Console and X keyboard layout.";
+      type = lib.types.str;
+      default = "us";
+    };
+
     supportedLocales = lib.mkOption {
       description = "Supported locale definitions.";
       type = lib.types.listOf lib.types.str;

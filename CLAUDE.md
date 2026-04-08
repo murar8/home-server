@@ -35,15 +35,20 @@ Flake uses [numtide/blueprint](https://github.com/numtide/blueprint) for convent
 - `modules/nixos/common.nix` — foundation: imports `options`, `base`, disko, lanzaboote, neovim overlay (all hosts import this)
 - `modules/nixos/options.nix` — shared `local.*` options (user, sshKey, stateVersion, net, tailnet, locale, etc.)
 - `modules/nixos/base.nix` — universal: nix settings, SSH, user, dotfiles, btrfs scrub
+- `modules/nixos/secure-boot.nix` — lanzaboote secure boot (all hosts import this)
 - `modules/nixos/hardening.nix` — server hardening: audit, sysctl, kernel module blacklisting
-- `modules/nixos/networking.nix` — Tailscale, Caddy, Syncthing, static IP, firewall
+- `modules/nixos/desktop/` — desktop baseline: pipewire, keyd, docker, hardware, packages
+- `modules/nixos/gnome/` — GNOME DE, dconf settings
+- `modules/nixos/fprintd.nix` — fingerprint auth (hosts opt in)
+- Networking (pick one): `static-ip.nix` (server), `bridge-networking.nix` (desktop), `networkmanager.nix` (laptop)
+- Tailscale: `tailscale-server.nix` (subnet routing, exit node, Caddy cert uid) / `tailscale-client.nix` (operator mode)
+- Syncthing: `syncthing-server.nix` (system service, GUI on LAN, persistence) / `syncthing-client.nix` (user service)
+- `modules/nixos/home-assistant/` — Home Assistant + Caddy reverse proxy + lovelace dashboard
 - `modules/nixos/samba.nix` — Samba file sharing
-- `modules/nixos/desktop/` — desktop-only: pipewire, keyd, docker, packages
-- `modules/nixos/gnome/` — GNOME DE, dconf settings (internal)
-- `modules/nixos/fprintd.nix` — fingerprint auth (exposed, hosts opt in)
-- `modules/nixos/home-assistant/` — Home Assistant + lovelace dashboard (internal)
-- `modules/nixos/vfio-gpu.nix`, `looking-glass.nix`, `virt-manager/`, `wol-vm-start/` — virtualization
+- `modules/nixos/impermanence/` — btrfs root rollback, persistence base dirs
 - `modules/nixos/initrd-ssh.nix` — initrd SSH for remote disk unlock
+- `modules/nixos/auto-upgrade.nix` — automatic flake-based upgrades
+- Virtualization: `vfio-gpu.nix`, `looking-glass.nix`, `virt-manager/`, `wol-vm-start/`
 - Only `common.nix` may import other modules; all other modules are wired by hosts explicitly
 
 ## Code Style

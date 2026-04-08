@@ -10,7 +10,11 @@
     inputs.NixVirt.nixosModules.default
     flake.modules.nixos.common
     flake.modules.nixos.desktop
+    flake.modules.nixos.docker
     flake.modules.nixos.gnome
+    flake.modules.nixos.keyd
+    flake.modules.nixos.tailscale-client
+    flake.modules.nixos.syncthing-client
     flake.modules.nixos.initrd-ssh
     flake.modules.nixos.bridge-networking
     flake.modules.nixos.vfio-gpu
