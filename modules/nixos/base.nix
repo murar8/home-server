@@ -71,6 +71,8 @@
     };
   };
 
+  hardware.enableRedistributableFirmware = true;
+
   services = {
     btrfs.autoScrub.enable = true;
     envfs.enable = true;

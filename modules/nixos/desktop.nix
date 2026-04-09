@@ -6,7 +6,6 @@
   programs.nix-ld.enable = true;
 
   hardware = {
-    enableRedistributableFirmware = true;
     bluetooth.enable = true;
     graphics.enable = true;
   };

@@ -2,16 +2,9 @@
 # CPU: Intel i5-6500 (4c/4t @ 3.2GHz) | RAM: 4GB DDR4
 # NIC: Realtek RTL8111 (enp1s0) | GPU: Intel HD 530
 # Storage: SanDisk SSD PLUS 480GB (internal SATA)
-{
-  config,
-  lib,
-  modulesPath,
-  ...
-}:
+{ config, lib, ... }:
 
 {
-  imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
-
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 
