@@ -18,6 +18,11 @@
     };
   };
 
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+  };
+
   environment.sessionVariables = {
     SSH_AUTH_SOCK = "$HOME/.bitwarden-ssh-agent.sock";
     # libxkbcommon needs this to find compose tables for the compose key
@@ -45,7 +50,6 @@
     # cli tools
     curl
     delta
-    direnv
     fd
     fzf
     gh
