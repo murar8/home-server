@@ -23,6 +23,10 @@
       "/var/lib/nixos"
       "/var/lib/systemd/timers"
     ];
+    users.${config.local.user}.directories = [
+      ".local/share/nvim"
+      ".local/state/nvim"
+    ];
   };
 
   # https://man.openbsd.org/ssh-keygen#DESCRIPTION
