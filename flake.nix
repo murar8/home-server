@@ -2,10 +2,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     impermanence.url = "github:nix-community/impermanence";
-    neovim-bin = {
-      url = "https://github.com/neovim/neovim/releases/download/v0.12.1/nvim-linux-x86_64.tar.gz";
-      flake = false;
-    };
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     dotfiles = {
       url = "github:murar8/dotfiles";
       flake = false;
@@ -30,6 +27,10 @@
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # No nixpkgs follows — some llm-agents packages require unstable APIs
+    # incompatible with nixos-25.11. claude-code is a native binary so the
+    # extra nixpkgs has no runtime cost.
+    llm-agents.url = "github:numtide/llm-agents.nix";
     NixVirt = {
       url = "https://flakehub.com/f/AshleyYakeley/NixVirt/0.6.0.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";

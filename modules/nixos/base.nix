@@ -1,11 +1,16 @@
-{ config, pkgs, ... }:
+{
+  config,
+  inputs,
+  pkgs,
+  ...
+}:
 
 {
-  environment.systemPackages = with pkgs; [
-    git
-    nano
-    neovim
-    rsync
+  environment.systemPackages = [
+    pkgs.git
+    pkgs.nano
+    inputs.nixpkgs-unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.neovim
+    pkgs.rsync
   ];
 
   system.stateVersion = config.local.stateVersion;
@@ -40,8 +45,6 @@
   programs.bash.loginShellInit = ''
     [ -f ~/.bashrc ] && . ~/.bashrc
   '';
-
-  environment.sessionVariables.PATH = [ "$HOME/.local/bin" ];
 
   i18n = {
     defaultLocale = config.local.locale;

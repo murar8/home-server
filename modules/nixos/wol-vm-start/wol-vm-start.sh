@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -u
 
 # WoL magic packet = 6×0xFF then 16× target MAC (6 bytes each), 102 bytes total.
 # Based on https://serverfault.com/questions/474199

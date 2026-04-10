@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 {
   nixpkgs.config.allowUnfree = true;
@@ -37,11 +37,12 @@
     discord
     slack
 
+    # ai
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
+
     # terminals & editors
     gcc
     ghostty
-    nano
-    neovim
     nodejs
     python3
     tree-sitter
@@ -53,12 +54,10 @@
     fd
     fzf
     gh
-    git
     imagemagick
     jq
     lazygit
     ripgrep
-    rsync
     sox
     wget
     wl-clipboard

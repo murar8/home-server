@@ -75,6 +75,7 @@ in
 
   environment.systemPackages = with pkgs; [
     adw-gtk3
+    gnome-calendar
     nautilus
     seahorse
 

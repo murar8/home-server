@@ -22,29 +22,27 @@ let
 in
 
 {
-  config = {
-    assertions = [
-      {
-        assertion = config.virtualisation.libvirtd.enable;
-        message = "wol-vm-start requires libvirtd to be enabled.";
-      }
+  assertions = [
+    {
+      assertion = config.virtualisation.libvirtd.enable;
+      message = "wol-vm-start requires libvirtd to be enabled.";
+    }
+  ];
+
+  networking.firewall.allowedUDPPorts = [ 9 ];
+
+  systemd.services.wol-vm-start = {
+    description = "Wake-on-LAN listener for libvirt VMs";
+    after = [
+      "network.target"
+      "libvirtd.service"
     ];
-
-    networking.firewall.allowedUDPPorts = [ 9 ];
-
-    systemd.services.wol-vm-start = {
-      description = "Wake-on-LAN listener for libvirt VMs";
-      after = [
-        "network.target"
-        "libvirtd.service"
-      ];
-      wants = [ "libvirtd.service" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        ExecStart = lib.getExe script;
-        Restart = "always";
-        RestartSec = 5;
-      };
+    wants = [ "libvirtd.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      ExecStart = lib.getExe script;
+      Restart = "always";
+      RestartSec = 5;
     };
   };
 }

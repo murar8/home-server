@@ -259,10 +259,13 @@ in
     cache-size = mkInt32 32;
     display-mode = mkInt32 2;
     enable-keybindings = true;
+    excluded-apps = [ "Bitwarden" ];
     history-size = mkInt32 200;
     move-item-first = true;
     next-entry = [ "<Super>v" ];
+    notify-on-cycle = false;
     prev-entry = [ "<Super><Shift>v" ];
+    regex-search = true;
     toggle-menu = [ "<Super><Alt>v" ];
     clear-history = emptyAs;
     private-mode-binding = emptyAs;
