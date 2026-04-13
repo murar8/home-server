@@ -19,9 +19,9 @@ NixOS configurations for personal machines:
 ## Deploy
 
 ```sh
-# Remote
-nixos-rebuild switch --flake .#<host> --target-host <host> --build-host <host> --ask-sudo-password
+# Local (host picked from hostname, flake path via NH_OS_FLAKE)
+nh os switch
 
-# Local
-nixos-rebuild switch --flake .#<host> --sudo
+# Remote (prodesk from desktop)
+nh os switch -H prodesk --target-host prodesk --build-host prodesk
 ```

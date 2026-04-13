@@ -1,27 +1,13 @@
 # NixOS Machines
 
-Multi-host NixOS flake: Prodesk (home server), ThinkPad (laptop), Desktop (AMD workstation).
+See [README.md](./README.md) for host overview and deploy commands. Extra details Claude needs:
 
-## Hosts
+- Prodesk runs impermanence; `prodesk-unlock` is initrd LUKS on port 2222
+- IPs: prodesk `192.168.1.130`, thinkpad `192.168.1.141`, desktop `192.168.1.60`
 
-- **Prodesk** (`prodesk`, 192.168.1.130) — HP ProDesk 400 G3 SFF, NixOS 25.11, impermanence
-- **ThinkPad** (`thinkpad`, 192.168.1.141) — ThinkPad L15 Gen 2a, GNOME
-- **Desktop** (`desktop`, 192.168.1.60) — AMD desktop, VFIO GPU passthrough
-- `prodesk-unlock` — initrd LUKS unlock (port 2222)
-
-## Commands
+## Dev commands
 
 ```sh
-# Desktop (local — needs interactive terminal)
-sudo nixos-rebuild switch --flake .#desktop
-
-# ThinkPad (local — needs interactive terminal)
-nixos-rebuild switch --flake .#thinkpad --sudo
-
-# Prodesk (remote from desktop — needs interactive terminal)
-nixos-rebuild switch --flake .#prodesk \
-  --target-host prodesk --build-host prodesk --ask-sudo-password
-
 nix fmt                              # format
 nix develop -c statix check .        # lint
 nix develop -c nil diagnostics <file>
@@ -35,6 +21,7 @@ Flake uses [numtide/blueprint](https://github.com/numtide/blueprint) for convent
 - `modules/nixos/common.nix` — foundation: imports `options`, `base`, disko, lanzaboote, neovim overlay (all hosts import this)
 - `modules/nixos/options.nix` — shared `local.*` options (user, sshKey, stateVersion, net, tailnet, locale, etc.)
 - `modules/nixos/base.nix` — universal: nix settings, SSH, user, dotfiles, btrfs scrub
+- `modules/nixos/nh.nix` — nh helper + weekly GC (`--keep-since 7d --keep 3`); replaces `nix.gc`
 - `modules/nixos/secure-boot.nix` — lanzaboote secure boot (all hosts import this)
 - `modules/nixos/hardening.nix` — server hardening: audit, sysctl, kernel module blacklisting
 - `modules/nixos/desktop.nix` — desktop baseline: pipewire, hardware, packages
@@ -90,7 +77,7 @@ Flake uses [numtide/blueprint](https://github.com/numtide/blueprint) for convent
 ## Nix Gotchas
 
 - New `.nix` files must be `git add`ed before build/check
-- `--ask-sudo-password` requires interactive terminal — Claude Code cannot run rebuilds
+- `nixos-rebuild`/`nh os switch` prompt for sudo password — requires interactive terminal, Claude Code cannot run rebuilds
 - `boot.initrd.network.ssh` is the correct initrd SSH option even with `boot.initrd.systemd.enable = true`
 - statix enforces merging repeated attrset keys
 - nil pre-commit hook has `denyWarnings = true`

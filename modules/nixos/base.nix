@@ -19,19 +19,12 @@
 
   time.timeZone = config.local.timeZone;
 
-  nix = {
-    gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 7d";
-    };
-    settings = {
-      auto-optimise-store = true;
-      experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
-    };
+  nix.settings = {
+    auto-optimise-store = true;
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
   };
 
   users.users.${config.local.user} = {
@@ -80,6 +73,7 @@
     btrfs.autoScrub.enable = true;
     envfs.enable = true;
     fwupd.enable = true;
+    smartd.enable = true;
   };
 
 }

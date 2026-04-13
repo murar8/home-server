@@ -41,12 +41,14 @@
     inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
 
     # terminals & editors
-    gcc
     ghostty
     nodejs
     python3
     tree-sitter
     unzip
+
+    # dev tools
+    gcc
 
     # cli tools
     curl
