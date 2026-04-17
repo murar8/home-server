@@ -11,6 +11,7 @@
     flake.modules.nixos.syncthing-client
     flake.modules.nixos.fprintd
     flake.modules.nixos.networkmanager
+    flake.modules.nixos.yubikey
     ./hardware-configuration.nix
     ./disk-config.nix
   ];

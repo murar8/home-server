@@ -11,6 +11,8 @@
     "nvme"
     "xhci_pci"
     "xhci_pci_renesas"
+    "usbhid"
+    "hid_generic"
     "usb_storage"
     "sd_mod"
     "sdhci_pci"

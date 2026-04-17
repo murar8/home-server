@@ -26,7 +26,10 @@ _: {
             passwordFile = "/tmp/luks-pass";
             settings = {
               allowDiscards = true;
-              crypttabExtraOpts = [ "tries=0" ];
+              crypttabExtraOpts = [
+                "fido2-device=auto"
+                "tries=0"
+              ];
             };
             content = {
               type = "btrfs";

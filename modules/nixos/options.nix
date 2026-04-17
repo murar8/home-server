@@ -14,6 +14,12 @@
       default = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKCfqnufJrf3pZxXvFcqbB1vUhyc0EFuDBuUEO7Q0Luq lnzmrr@gmail.com";
     };
 
+    u2fKeys = lib.mkOption {
+      description = "FIDO2 U2F key mappings for pam_u2f (output of pamu2fcfg).";
+      type = lib.types.str;
+      default = "AxptVFSc5KEG28YJwkCsFbDFwZ4hTZlBLkKUUtmWUl02LuyEZ+Oy2wX8LB9fn2Prfjjm4gdO4I9jRX7N9qBnbA==,UotHID4MD06WMhk3OcMjjuXD4wxvuVAQgLekeshY+8EbCbtPJy4vlb5M7pBv4IqUijktq4N3jf/FeA2xkuxmCg==,es256,+presence";
+    };
+
     stateVersion = lib.mkOption {
       description = "NixOS state version.";
       type = lib.types.str;

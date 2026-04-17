@@ -22,6 +22,7 @@
     flake.modules.nixos.looking-glass
     flake.modules.nixos.virt-manager
     flake.modules.nixos.wol-vm-start
+    flake.modules.nixos.yubikey
     ./hardware-configuration.nix
     ./disk-config.nix
   ];

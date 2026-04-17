@@ -12,6 +12,7 @@
     "xhci_pci"
     "ahci"
     "usbhid"
+    "hid_generic"
     "usb_storage"
     "sd_mod"
     "r8169"
