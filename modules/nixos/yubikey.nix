@@ -1,7 +1,10 @@
 { config, pkgs, ... }:
 
 {
-  environment.systemPackages = [ pkgs.yubikey-manager ];
+  environment.systemPackages = with pkgs; [
+    yubikey-manager # `ykman` CLI for PIV/OTP/FIDO2 management
+    opensc # provides opensc-pkcs11.so loaded by Chrome/Firefox/AutoFirma for PIV client-cert auth
+  ];
 
   environment.etc."u2f-mappings".text = "${config.local.user}:${config.local.u2fKeys}";
 
