@@ -33,8 +33,6 @@
     openssh.authorizedKeys.keys = [ config.local.sshKey ];
   };
 
-  security.sudo.extraConfig = "Defaults timestamp_timeout=30";
-
   programs.bash.loginShellInit = ''
     [ -f ~/.bashrc ] && . ~/.bashrc
   '';

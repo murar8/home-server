@@ -68,6 +68,7 @@
           {
             cards = (heading "Global" "mdi:cog") ++ [
               (tile "select.esp_garden_watering_interval" "Watering Interval")
+              (tile "sensor.esp_garden_light_duration" "Light Duration")
             ];
           }
           {

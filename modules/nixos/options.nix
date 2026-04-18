@@ -14,6 +14,18 @@
       default = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKCfqnufJrf3pZxXvFcqbB1vUhyc0EFuDBuUEO7Q0Luq lnzmrr@gmail.com";
     };
 
+    yubikeySudoSshKey = lib.mkOption {
+      description = "FIDO2 ed25519-sk SSH public key (touch-required) — authorized for tap-to-sudo.";
+      type = lib.types.str;
+      default = "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIE2lA+l6+B7WSc/MTVHCKM1k0nx8829f6lmBiu56QLLrAAAAC3NzaDpwcm9kZXNr yubikey-prodesk-sudo";
+    };
+
+    yubikeyLoginSshKey = lib.mkOption {
+      description = "FIDO2 ed25519-sk SSH public key (no-touch-required) — authorized for silent SSH login.";
+      type = lib.types.str;
+      default = "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIC70g/4Y1ZAR5wZxsWwSSZ8FqmySBvoPewV8tCSixng8AAAAEXNzaDpwcm9kZXNrLWxvZ2lu yubikey-prodesk-login";
+    };
+
     u2fKeys = lib.mkOption {
       description = "FIDO2 U2F key mappings for pam_u2f (output of pamu2fcfg).";
       type = lib.types.str;

@@ -20,14 +20,13 @@
       # Scoped to the top-level USB device — HID/input sub-interfaces churn
       # during challenge-response (KeePassXC C/R) and would otherwise trigger
       # false-positive locks.
+      # Match on ENV{PRODUCT} (vendor/product/bcd): 1050=Yubico, 0407=YubiKey 5 OTP+FIDO+CCID.
+      # ID_MODEL_ID/ID_VENDOR_ID aren't repopulated on remove events, so we can't match on them.
       extraRules = ''
         ACTION=="remove",\
          SUBSYSTEM=="usb",\
          ENV{DEVTYPE}=="usb_device",\
-         ENV{ID_BUS}=="usb",\
-         ENV{ID_MODEL_ID}=="0407",\
-         ENV{ID_VENDOR_ID}=="1050",\
-         ENV{ID_VENDOR}=="Yubico",\
+         ENV{PRODUCT}=="1050/407/*",\
          RUN+="${pkgs.systemd}/bin/loginctl lock-sessions"
       '';
     };
