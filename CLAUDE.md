@@ -20,8 +20,7 @@ Flake uses [numtide/blueprint](https://github.com/numtide/blueprint) for convent
 
 - `modules/nixos/common.nix` — foundation: imports `options`, `base`, disko, lanzaboote, neovim overlay (all hosts import this)
 - `modules/nixos/options.nix` — shared `local.*` options (user, sshKey, stateVersion, net, tailnet, locale, etc.)
-- `modules/nixos/base.nix` — universal: nix settings, SSH, user, dotfiles, btrfs scrub
-- `modules/nixos/nh.nix` — nh helper + weekly GC (`--keep-since 7d --keep 3`); replaces `nix.gc`
+- `modules/nixos/base.nix` — universal: nix settings + weekly GC, SSH, user, dotfiles, btrfs scrub
 - `modules/nixos/secure-boot.nix` — lanzaboote secure boot (all hosts import this)
 - `modules/nixos/hardening.nix` — server hardening: audit, sysctl, kernel module blacklisting
 - `modules/nixos/desktop.nix` — desktop baseline: pipewire, hardware, packages
@@ -77,7 +76,7 @@ Flake uses [numtide/blueprint](https://github.com/numtide/blueprint) for convent
 ## Nix Gotchas
 
 - New `.nix` files must be `git add`ed before build/check
-- `nixos-rebuild`/`nh os switch` prompt for sudo password — requires interactive terminal, Claude Code cannot run rebuilds
+- `nixos-rebuild` prompts for sudo password / YubiKey tap — requires interactive terminal, Claude Code cannot run rebuilds
 - `boot.initrd.network.ssh` is the correct initrd SSH option even with `boot.initrd.systemd.enable = true`
 - statix enforces merging repeated attrset keys
 - nil pre-commit hook has `denyWarnings = true`

@@ -20,13 +20,21 @@
     hideMounts = true;
     directories = [
       "/etc/secureboot"
+      "/var/lib/fwupd"
       "/var/lib/nixos"
+      "/var/lib/sudo"
+      "/var/lib/systemd/coredump"
       "/var/lib/systemd/timers"
+      "/var/log"
     ];
-    users.${config.local.user}.directories = [
-      ".local/share/nvim"
-      ".local/state/nvim"
-    ];
+    users.${config.local.user} = {
+      directories = [
+        ".local/share/direnv"
+        ".local/share/nvim"
+        ".local/state/nvim"
+      ];
+      files = [ ".ssh/known_hosts" ];
+    };
   };
 
   # https://man.openbsd.org/ssh-keygen#DESCRIPTION
