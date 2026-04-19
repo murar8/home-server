@@ -16,12 +16,8 @@
     udev = {
       packages = [ pkgs.yubikey-personalization ];
 
-      # Lock all sessions when YubiKey is unplugged (YubiKey 5 series).
-      # Scoped to the top-level USB device — HID/input sub-interfaces churn
-      # during challenge-response (KeePassXC C/R) and would otherwise trigger
-      # false-positive locks.
-      # Match on ENV{PRODUCT} (vendor/product/bcd): 1050=Yubico, 0407=YubiKey 5 OTP+FIDO+CCID.
-      # ID_MODEL_ID/ID_VENDOR_ID aren't repopulated on remove events, so we can't match on them.
+      # Lock sessions on YubiKey 5 unplug. Match top-level usb_device only (sub-interfaces churn
+      # during C/R). ENV{PRODUCT}=1050/407 (Yubico/YubiKey 5) — ID_* aren't set on remove events.
       extraRules = ''
         ACTION=="remove",\
          SUBSYSTEM=="usb",\

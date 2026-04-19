@@ -1,7 +1,6 @@
-# Fingerprint authentication with GDM workaround
+# GDM workaround: fprintd disables password login without custom pam stack.
 # https://github.com/NixOS/nixpkgs/issues/171136
 # https://wiki.nixos.org/wiki/Fingerprint_scanner
-# fprintd disables password login in GDM without this workaround
 { pkgs, ... }:
 
 {

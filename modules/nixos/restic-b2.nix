@@ -1,25 +1,5 @@
 { lib, pkgs, ... }:
 
-# Backups to Backblaze B2 via restic.
-# Secrets are TPM-sealed .cred files under /persist/etc/restic, generated
-# once on-host (they bind to this machine's TPM + PCR 7, so they cannot
-# be decrypted elsewhere and are safe to leave on disk).
-#
-# Bootstrap (run on prodesk, as root):
-#
-#   install -d -m 0700 /persist/etc/restic
-#   systemd-creds encrypt --with-key=tpm2 --tpm2-pcrs=7 - \
-#     /persist/etc/restic/repo-password.cred \
-#     <<< "$(openssl rand -base64 32)"
-#   systemd-creds encrypt --with-key=tpm2 --tpm2-pcrs=7 - \
-#     /persist/etc/restic/b2-env.cred <<'EOF'
-#   B2_ACCOUNT_ID=<application key id>
-#   B2_ACCOUNT_KEY=<application key>
-#   EOF
-#
-# Keep a copy of the repo password somewhere offline (Bitwarden) — losing
-# it means the B2 backups are unrecoverable.
-
 {
   users.users.restic = {
     isSystemUser = true;
@@ -48,10 +28,7 @@
     initialize = true;
     repository = "b2:murar8-prodesk-restic:/";
     user = "restic";
-    # EnvironmentFile= cannot read from systemd's credentials directory
-    # (systemd issue #40333). Source B2 creds from the wrapper instead.
-    # passwordFile becomes RESTIC_PASSWORD_FILE which restic reads at runtime,
-    # so the credentials-dir path works there.
+    # systemd #40333: EnvironmentFile= can't read CREDENTIALS_DIRECTORY; source in wrapper instead.
     package = pkgs.writeShellScriptBin "restic" ''
       set -a
       . "$CREDENTIALS_DIRECTORY/b2-env"

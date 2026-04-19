@@ -11,23 +11,35 @@ See [README.md](./README.md) for host overview and deploy commands. Extra detail
 nix fmt                              # format
 nix develop -c statix check .        # lint
 nix develop -c nil diagnostics <file>
-nix flake check                      # validate
+nix flake check                      # validate (new .nix files must be `git add`ed first)
 ```
 
 ## Module Hierarchy
 
-Flake uses [numtide/blueprint](https://github.com/numtide/blueprint) for convention-based output generation. Modules live in `modules/nixos/` and are auto-discovered as `flake.modules.nixos.<name>`. Host configs use `flake.modules.nixos.*` and `inputs.*` instead of relative paths.
+Flake uses [numtide/blueprint](https://github.com/numtide/blueprint) for convention-based output generation. Modules live in `modules/nixos/` and are auto-discovered as `flake.modules.nixos.<name>`. Host entry points live in `hosts/<name>/configuration.nix`, which wire up modules via `flake.modules.nixos.*` and `inputs.*` (no relative paths).
 
-- `modules/nixos/common.nix` — foundation: imports `options`, `base`, disko, lanzaboote, neovim overlay (all hosts import this)
+Host opt-ins (beyond `common`, snapshot — authoritative source is `hosts/*/configuration.nix`):
+
+- **prodesk** (server): auto-upgrade, caddy, hardening, home-assistant, impermanence, initrd-ssh, static-ip, sudo-ssh-agent, restic-b2, tailscale-server, syncthing-server, samba
+- **desktop**: desktop, docker, gnome, keyd, tailscale-client, syncthing-client, initrd-ssh, static-ip, bridge-networking, vfio-gpu, looking-glass, virt-manager, wol-vm-start, yubikey
+- **thinkpad**: desktop, docker, gnome, keyd, tailscale-client, syncthing-client, fprintd, networkmanager, yubikey
+
+- `modules/nixos/common.nix` — foundation: imports `options`, `base`, `dotfiles`, `hardening-common`, `secure-boot`, `ssh`, disko, lanzaboote (all hosts import this)
 - `modules/nixos/options.nix` — shared `local.*` options (user, sshKey, stateVersion, net, tailnet, locale, etc.)
-- `modules/nixos/base.nix` — universal: nix settings + weekly GC, SSH, user, dotfiles, btrfs scrub
+- `modules/nixos/base.nix` — universal: nix settings + weekly GC, user, btrfs scrub
+- `modules/nixos/dotfiles.nix` — systemd oneshot that checks out dotfiles into user home
+- `modules/nixos/ssh.nix` — sshd config (key-only, no root, no TCP/stream forwarding, idle drop)
+- `modules/nixos/hardening-common.nix` — universal hardening (sysctl, kptr, yama, wheel-only nix/sudo)
 - `modules/nixos/secure-boot.nix` — lanzaboote secure boot (all hosts import this)
-- `modules/nixos/hardening.nix` — server hardening: audit, sysctl, kernel module blacklisting
+- `modules/nixos/hardening.nix` — server-only hardening (auditd, modprobe blacklist, martians) on top of hardening-common
 - `modules/nixos/desktop.nix` — desktop baseline: pipewire, hardware, packages
 - `modules/nixos/keyd.nix` — keyboard daemon (Caps Lock → Escape/Ctrl)
 - `modules/nixos/docker.nix` — Docker daemon + lazydocker
 - `modules/nixos/gnome/` — GNOME DE, dconf settings
 - `modules/nixos/fprintd.nix` — fingerprint auth (hosts opt in)
+- `modules/nixos/yubikey.nix` — pam_u2f, opensc (PIV), session lock on YubiKey removal
+- `modules/nixos/sudo-ssh-agent.nix` — tap-to-sudo via pam_rssh over forwarded SSH agent
+- `modules/nixos/restic-b2.nix` — Backblaze B2 backups with TPM-sealed creds
 - Networking (pick one): `static-ip.nix` (server), `bridge-networking.nix` (desktop), `networkmanager.nix` (laptop)
 - Tailscale: `tailscale-server.nix` (subnet routing, exit node, Caddy cert uid) / `tailscale-client.nix` (operator mode)
 - Syncthing: `syncthing-server.nix` (system service, GUI on LAN, persistence) / `syncthing-client.nix` (user service)
@@ -53,6 +65,9 @@ Flake uses [numtide/blueprint](https://github.com/numtide/blueprint) for convent
 - LUKS uses 4096-byte sectors; partition size must be multiple of 8 x 512-byte sectors or `cryptsetup resize` fails
 - TPM2 modules (`tpm_tis`, `tpm_crb`) must be in `initrd.availableKernelModules` — SATA boots faster than USB, causing TPM race
 - TPM2 re-enroll after SB key changes: `sudo systemd-cryptenroll --wipe-slot=tpm2 --tpm2-device=auto --tpm2-pcrs=7 /dev/disk/by-partlabel/disk-main-luks`
+- Restic creds at `/persist/etc/restic/*.cred` are TPM-sealed to PCR 7 — must be re-sealed after SB key changes (same trigger as LUKS); bootstrap with `systemd-creds encrypt --with-key=tpm2 --tpm2-pcrs=7` for `repo-password.cred` and `b2-env.cred` (B2_ACCOUNT_ID/B2_ACCOUNT_KEY). Keep repo password in Bitwarden — losing it makes B2 backups unrecoverable.
+- YubiKey session-lock udev rule matches `ENV{PRODUCT}=="1050/407/*"` (YubiKey 5 OTP+FIDO+CCID) — swapping models requires updating the rule
+- Tap-to-sudo uses two FIDO2 sk keys on one YubiKey (`yubikeyLoginSshKey` no-touch, `yubikeySudoSshKey` touch); do not raise sudo `timestamp_timeout` or you defeat the tap
 - `root-blank` subvol must be created manually after initial disko format
 - /tmp and /var/tmp are tmpfs (256M each) — required for systemd PrivateTmp on btrfs
 - Samba `hosts allow` uses trailing-dot subnet syntax (`192.168.1.`), not CIDR
