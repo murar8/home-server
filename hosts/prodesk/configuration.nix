@@ -11,6 +11,7 @@
     flake.modules.nixos.initrd-ssh
     flake.modules.nixos.static-ip
     flake.modules.nixos.sudo-ssh-agent
+    flake.modules.nixos.restic-b2
     flake.modules.nixos.tailscale-server
     flake.modules.nixos.syncthing-server
     flake.modules.nixos.samba
