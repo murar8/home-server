@@ -10,6 +10,7 @@ let
   dconfKeys = lib.concatMap (
     section: map (key: "/${section}/${key}") (builtins.attrNames dconfSettings.${section})
   ) (builtins.attrNames dconfSettings);
+
 in
 
 {
@@ -71,6 +72,15 @@ in
         to = 1764;
       }
     ];
+  };
+
+  xdg.mime.defaultApplications."text/plain" = "nvim.desktop";
+
+  # Ghostty as the terminal glib launches for desktop entries with
+  # Terminal=true (e.g. the stock nvim.desktop).
+  xdg.terminal-exec = {
+    enable = true;
+    settings.default = [ "com.mitchellh.ghostty.desktop" ];
   };
 
   environment.systemPackages = with pkgs; [
