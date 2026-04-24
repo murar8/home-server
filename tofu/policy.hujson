@@ -50,7 +50,7 @@
     // Members can reach member devices
     {
       "src": "murar8@github",
-      "accept": ["100.93.230.82:22", "100.93.171.104:22", "100.94.207.109:22"],
+      "accept": ["100.93.230.82:22", "100.90.169.56:22", "100.94.207.109:22"],
     },
     // Members can reach initrd nodes
     {
@@ -65,7 +65,7 @@
     // initrd nodes cannot reach member devices
     {
       "src": "tag:initrd",
-      "deny": ["100.93.230.82:22", "100.93.171.104:22"],
+      "deny": ["100.93.230.82:22", "100.90.169.56:22"],
     },
     // Members can reach LAN via subnet router
     {
