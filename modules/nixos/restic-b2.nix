@@ -26,11 +26,10 @@
     initialize = true;
     repository = "b2:murar8-${config.networking.hostName}-restic:/";
     user = "restic";
-    # systemd #40333: EnvironmentFile= can't read CREDENTIALS_DIRECTORY; source in wrapper instead.
     package = pkgs.writeShellScriptBin "restic" ''
-      set -a
-      . "$CREDENTIALS_DIRECTORY/b2-env"
-      set +a
+      B2_ACCOUNT_ID="$(cat "$CREDENTIALS_DIRECTORY/b2-account-id")"
+      B2_ACCOUNT_KEY="$(cat "$CREDENTIALS_DIRECTORY/b2-account-key")"
+      export B2_ACCOUNT_ID B2_ACCOUNT_KEY
       exec /run/wrappers/bin/restic "$@"
     '';
     passwordFile = "/run/credentials/restic-backups-b2.service/repo-password";
@@ -46,6 +45,7 @@
 
   systemd.services.restic-backups-b2.serviceConfig.LoadCredentialEncrypted = [
     "repo-password:/etc/restic/repo-password.cred"
-    "b2-env:/etc/restic/b2-env.cred"
+    "b2-account-id:/etc/restic/b2-account-id.cred"
+    "b2-account-key:/etc/restic/b2-account-key.cred"
   ];
 }

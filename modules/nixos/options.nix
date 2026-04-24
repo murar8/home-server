@@ -82,6 +82,7 @@
 
     restic = lib.mkOption {
       description = "Restic B2 backup paths and excludes (bucket derived from hostname).";
+      default = { };
       type = lib.types.submodule {
         options = {
           paths = lib.mkOption {
