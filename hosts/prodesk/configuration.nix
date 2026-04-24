@@ -20,8 +20,29 @@
   ];
 
   networking.hostName = "prodesk";
-  local.net.ip = "192.168.1.130";
-  local.net.interface = "enp1s0";
+
+  local = {
+    net.ip = "192.168.1.130";
+    net.interface = "enp1s0";
+    restic = {
+      paths = [ "/persist" ];
+      exclude = [
+        "/persist/var/lib/systemd/coredump"
+        "/persist/var/lib/fwupd"
+        "/persist/var/log"
+        "/persist/home/murar8/Documents"
+      ];
+    };
+  };
+
+  environment.persistence."/persist".directories = [
+    {
+      directory = "/etc/restic";
+      user = "root";
+      group = "root";
+      mode = "0700";
+    }
+  ];
 
   # Wire home-assistant to caddy reverse proxy
   services.caddy.virtualHosts."prodesk.${config.local.tailnet}".extraConfig = ''
@@ -30,5 +51,4 @@
 
   boot.initrd.availableKernelModules = [ "r8169" ];
   modules.initrd-ssh.hostKeys = [ "/persist/etc/secrets/initrd/ssh_host_ed25519_key" ];
-
 }

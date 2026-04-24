@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ config, lib, ... }:
 
 {
   options.local = {
@@ -78,6 +78,42 @@
       description = "Tailscale tailnet domain.";
       type = lib.types.str;
       default = "tail87795f.ts.net";
+    };
+
+    restic = lib.mkOption {
+      description = "Restic B2 backup paths and excludes (bucket derived from hostname).";
+      type = lib.types.submodule {
+        options = {
+          paths = lib.mkOption {
+            description = "Paths to back up.";
+            type = lib.types.listOf lib.types.str;
+            default = [ "/home/${config.local.user}" ];
+          };
+          exclude = lib.mkOption {
+            description = "Paths and patterns to exclude from backup.";
+            type = lib.types.listOf lib.types.str;
+            default =
+              let
+                home = "/home/${config.local.user}";
+              in
+              [
+                "${home}/.cache"
+                "${home}/Downloads"
+                "${home}/Documents"
+                "${home}/.local/share/Trash"
+                "${home}/.local/share/Steam"
+                "${home}/.local/share/umu"
+                "${home}/.local/share/nvim"
+                "${home}/.local/share/virtualenv"
+                "${home}/.config/Slack"
+                "${home}/.config/Cypress"
+                "${home}/.config/google-chrome/*/Cache"
+                "${home}/.config/google-chrome/*/Code Cache"
+                "${home}/.config/google-chrome/*/GPUCache"
+              ];
+          };
+        };
+      };
     };
 
     net = lib.mkOption {
