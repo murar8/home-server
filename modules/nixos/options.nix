@@ -99,6 +99,7 @@
               in
               [
                 "${home}/.cache"
+                "${home}/.dotfiles"
                 "${home}/Downloads"
                 "${home}/Documents"
                 "${home}/.local/share/Trash"
@@ -106,6 +107,11 @@
                 "${home}/.local/share/umu"
                 "${home}/.local/share/nvim"
                 "${home}/.local/share/virtualenv"
+                "${home}/.npm"
+                "${home}/.yarn"
+                "${home}/.platformio"
+                "${home}/.cargo/registry"
+                "${home}/.cargo/git"
                 "${home}/.config/Slack"
                 "${home}/.config/Cypress"
                 "${home}/.config/google-chrome/*/Cache"
