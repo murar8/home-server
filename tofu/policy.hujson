@@ -1,24 +1,10 @@
 {
-  "tagOwners": {
-    // Nodes running in initramfs before disk unlock.
-    // State file is in plaintext on unencrypted boot partition — restrict to inbound-only.
-    "tag:initrd": ["autogroup:admin"],
-    // Ephemeral GitHub Actions runners for ACL deployment.
-    "tag:ci": ["autogroup:admin"],
-  },
-
   "grants": [
     // Allow member devices unrestricted access to other member devices
     {
       "src": ["autogroup:member"],
       "dst": ["autogroup:member"],
       "ip": ["*"],
-    },
-    // Allow member devices to reach initrd nodes (SSH only)
-    {
-      "src": ["autogroup:member"],
-      "dst": ["tag:initrd"],
-      "ip": ["tcp:22"],
     },
     // Allow member devices to access LAN via subnet router
     {
@@ -28,92 +14,16 @@
     },
   ],
 
-  "ssh": [
-    // Allow members to SSH into their own devices (check mode, 12h session)
-    {
-      "action": "check",
-      "checkPeriod": "12h",
-      "src": ["autogroup:member"],
-      "dst": ["autogroup:self"],
-      "users": ["autogroup:nonroot", "root"],
-    },
-    // Allow members to SSH into initrd as root for remote LUKS unlock
-    {
-      "action": "accept",
-      "src": ["autogroup:member"],
-      "dst": ["tag:initrd"],
-      "users": ["root"],
-    },
-  ],
-
   "tests": [
     // Members can reach member devices
     {
       "src": "murar8@github",
       "accept": ["100.93.230.82:22", "100.90.169.56:22", "100.94.207.109:22"],
     },
-    // Members can reach initrd nodes
-    {
-      "src": "murar8@github",
-      "accept": ["tag:initrd:22"],
-    },
-    // Members cannot reach initrd on non-SSH ports
-    {
-      "src": "murar8@github",
-      "deny": ["tag:initrd:80", "tag:initrd:443"],
-    },
-    // initrd nodes cannot reach member devices
-    {
-      "src": "tag:initrd",
-      "deny": ["100.93.230.82:22", "100.90.169.56:22"],
-    },
     // Members can reach LAN via subnet router
     {
       "src": "murar8@github",
       "accept": ["192.168.1.1:80", "192.168.1.130:22"],
-    },
-    // CI runners cannot reach member devices or LAN
-    {
-      "src": "tag:ci",
-      "deny": ["100.93.230.82:22", "192.168.1.130:22"],
-    },
-    // initrd nodes cannot reach LAN via subnet router
-    {
-      "src": "tag:initrd",
-      "deny": ["192.168.1.1:80", "192.168.1.130:22"],
-    },
-  ],
-
-  "sshTests": [
-    // Members can SSH into their own devices (check mode)
-    {
-      "src": "murar8@github",
-      "dst": ["100.93.230.82"],
-      "check": ["root", "murar8"],
-    },
-    // Members can SSH into initrd as root (accept, no browser check)
-    {
-      "src": "murar8@github",
-      "dst": ["tag:initrd"],
-      "accept": ["root"],
-    },
-    // Members cannot SSH into initrd as non-root
-    {
-      "src": "murar8@github",
-      "dst": ["tag:initrd"],
-      "deny": ["murar8"],
-    },
-    // initrd nodes cannot SSH into member devices
-    {
-      "src": "tag:initrd",
-      "dst": ["100.93.230.82"],
-      "deny": ["root", "murar8"],
-    },
-    // CI runners cannot SSH into any device
-    {
-      "src": "tag:ci",
-      "dst": ["100.93.230.82"],
-      "deny": ["root", "murar8"],
     },
   ],
 }
