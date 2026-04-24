@@ -24,7 +24,6 @@
   };
 
   environment.sessionVariables = {
-    SSH_AUTH_SOCK = "$HOME/.bitwarden-ssh-agent.sock";
     # libxkbcommon needs this to find compose tables for the compose key
     XLOCALEDIR = "${pkgs.xorg.libX11}/share/X11/locale";
   };
@@ -73,7 +72,6 @@
 
     # utilities
     bitwarden-cli
-    bitwarden-desktop
     mongodb-compass
     scrcpy
   ];
