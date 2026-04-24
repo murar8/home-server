@@ -9,8 +9,3 @@ resource "b2_bucket" "prodesk_restic" {
     mode      = "SSE-B2"
   }
 }
-
-import {
-  to = b2_bucket.prodesk_restic
-  id = "381732edc58fa45f97d1031c"
-}
