@@ -12,17 +12,7 @@ resource "tailscale_tailnet_settings" "tailnet" {
   users_role_allowed_to_join_external_tailnet = "admin"
 }
 
-import {
-  to = tailscale_tailnet_settings.tailnet
-  id = "tailnet_settings"
-}
-
 resource "tailscale_dns_preferences" "magic_dns" {
   magic_dns = true
-}
-
-import {
-  to = tailscale_dns_preferences.magic_dns
-  id = "dns_preferences"
 }
 
