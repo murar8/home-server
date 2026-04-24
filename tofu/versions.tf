@@ -6,6 +6,10 @@ terraform {
       source  = "tailscale/tailscale"
       version = "~> 0.28"
     }
+    b2 = {
+      source  = "Backblaze/b2"
+      version = "~> 0.12"
+    }
   }
 
   backend "s3" {
