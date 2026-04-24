@@ -84,7 +84,7 @@ Host opt-ins (beyond `common`, snapshot — authoritative source is `hosts/*/con
 ## Tailscale Gotchas
 
 - `permitCertUid = "caddy"` required for Caddy to fetch TLS certs
-- Subnet routes need ACL grant in `policy.hujson`
+- Subnet routes need ACL grant in `tofu/policy.hujson`
 - `extraUpFlags` only runs on first login; use `extraSetFlags` for persistent settings
 - Tailscale subnet routing captures LAN traffic to .130 — disconnect TS for Samba access
 

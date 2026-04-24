@@ -1,3 +1,6 @@
 result
 .direnv
 .claude
+
+# OpenTofu
+tofu/.terraform/

@@ -10,5 +10,6 @@ pkgs.mkShell {
   packages = with pkgs; [
     statix
     nil
+    opentofu
   ];
 }

@@ -1,0 +1,55 @@
+name: Tofu
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - tofu/**
+      - .github/workflows/tofu.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - tofu/**
+      - .github/workflows/tofu.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tofu-apply
+  cancel-in-progress: false
+
+jobs:
+  tofu:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tofu
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      TAILSCALE_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+      TAILSCALE_OAUTH_CLIENT_SECRET: ${{ secrets.TS_OAUTH_SECRET }}
+      TAILSCALE_TAILNET: ${{ secrets.TS_TAILNET }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: opentofu/setup-opentofu@v2
+        with:
+          tofu_version: 1.11.6
+          tofu_wrapper: false
+
+      - run: tofu fmt -check -diff -recursive
+
+      - run: tofu init -input=false -lockfile=readonly
+
+      - run: tofu validate
+
+      - name: Plan
+        if: github.event_name == 'pull_request'
+        run: tofu plan -input=false -no-color
+
+      - name: Apply
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: tofu apply -input=false -auto-approve
