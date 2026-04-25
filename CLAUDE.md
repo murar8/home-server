@@ -20,7 +20,7 @@ Flake uses [numtide/blueprint](https://github.com/numtide/blueprint) for convent
 
 Host opt-ins (beyond `common`, snapshot — authoritative source is `hosts/*/configuration.nix`):
 
-- **prodesk** (server): auto-upgrade, caddy, hardening, home-assistant, impermanence, initrd-ssh, static-ip, sudo-ssh-agent, restic-b2, tailscale-server, syncthing-server, samba
+- **prodesk** (server): auto-upgrade, caddy, hardening, healthchecks-runitor, home-assistant, impermanence, initrd-ssh, static-ip, sudo-ssh-agent, restic-b2, tailscale-server, syncthing-server, samba
 - **desktop**: desktop, docker, gnome, keyd, restic-b2, tailscale-client, syncthing-client, initrd-ssh, static-ip, bridge-networking, vfio-gpu, looking-glass, virt-manager, wol-vm-start, yubikey
 - **thinkpad**: desktop, docker, gnome, keyd, restic-b2, tailscale-client, syncthing-client, fprintd, networkmanager, yubikey
 
@@ -40,6 +40,7 @@ Host opt-ins (beyond `common`, snapshot — authoritative source is `hosts/*/con
 - `modules/nixos/yubikey.nix` — pam_u2f, opensc (PIV), session lock on YubiKey removal
 - `modules/nixos/sudo-ssh-agent.nix` — tap-to-sudo via pam_rssh over forwarded SSH agent
 - `modules/nixos/restic-b2.nix` — Backblaze B2 backups with TPM-sealed creds; bucket derived from hostname (`murar8-${host}-restic`), paths/excludes via `local.restic.*`
+- `modules/nixos/healthchecks-runitor.nix` — systemd timer (every 15 min) pinging healthchecks.io via `runitor`; project ping key TPM-sealed at `/etc/healthchecks/ping-key.cred`, slug derived from `config.networking.hostName`. Check is declared in `tofu/healthchecks.tf`
 - Networking (pick one): `static-ip.nix` (server), `bridge-networking.nix` (desktop), `networkmanager.nix` (laptop)
 - Tailscale: `tailscale-server.nix` (subnet routing, exit node, Caddy cert uid) / `tailscale-client.nix` (operator mode)
 - Syncthing: `syncthing-server.nix` (system service, GUI on LAN, persistence) / `syncthing-client.nix` (user service)
@@ -66,6 +67,7 @@ Host opt-ins (beyond `common`, snapshot — authoritative source is `hosts/*/con
 - TPM2 modules (`tpm_tis`, `tpm_crb`) must be in `initrd.availableKernelModules` — SATA boots faster than USB, causing TPM race
 - TPM2 re-enroll after SB key changes: `sudo systemd-cryptenroll --wipe-slot=tpm2 --tpm2-device=auto --tpm2-pcrs=7 /dev/disk/by-partlabel/disk-main-luks`
 - Restic creds are TPM-sealed to PCR 7 at `/etc/restic/*.cred` (prodesk: `/persist/etc/restic/*.cred` via impermanence) — must be re-sealed after SB key changes (same trigger as LUKS); bootstrap with `systemd-creds encrypt --with-key=tpm2 --tpm2-pcrs=7` for `repo-password.cred` and `b2-env.cred` (B2_ACCOUNT_ID/B2_ACCOUNT_KEY). Each host has its own B2 bucket + credentials. Keep repo passwords in Bitwarden — losing one makes that host's B2 backups unrecoverable.
+- Healthchecks project ping key is TPM-sealed at `/persist/etc/healthchecks/ping-key.cred` (PCR 7) — must be re-sealed after SB key changes (same trigger as restic/LUKS). Module pings via `runitor -ping-key <key> -slug ${hostname}-heartbeat`; the slug must match the check's slug in HC.io (auto-derived from the check `name` in `tofu/healthchecks.tf`, currently `prodesk-heartbeat`). Bootstrap: copy the project Ping key from HC.io (Project Settings → API Access → Ping key) into `systemd-creds encrypt --with-key=tpm2 --tpm2-pcrs=7 - /persist/etc/healthchecks/ping-key.cred`.
 - YubiKey session-lock udev rule matches `ENV{PRODUCT}=="1050/407/*"` (YubiKey 5 OTP+FIDO+CCID) — swapping models requires updating the rule
 - Tap-to-sudo uses two FIDO2 sk keys on one YubiKey (`yubikeyLoginSshKey` no-touch, `yubikeySudoSshKey` touch); do not raise sudo `timestamp_timeout` or you defeat the tap
 - `root-blank` subvol must be created manually after initial disko format
