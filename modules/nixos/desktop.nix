@@ -60,7 +60,6 @@
     jq
     lazygit
     ripgrep
-    sox
     wget
     wl-clipboard
 
@@ -72,7 +71,6 @@
     usbutils
 
     # utilities
-    bitwarden-cli
     mongodb-compass
     scrcpy
   ];
