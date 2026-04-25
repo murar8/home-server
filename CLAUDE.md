@@ -9,8 +9,6 @@ See [README.md](./README.md) for host overview and deploy commands. Extra detail
 
 ```sh
 nix fmt                              # format
-nix develop -c statix check .        # lint
-nix develop -c nil diagnostics <file>
 nix flake check                      # validate (new .nix files must be `git add`ed first)
 ```
 
@@ -40,7 +38,7 @@ Host opt-ins (beyond `common`, snapshot — authoritative source is `hosts/*/con
 - `modules/nixos/yubikey.nix` — pam_u2f, opensc (PIV), session lock on YubiKey removal
 - `modules/nixos/sudo-ssh-agent.nix` — tap-to-sudo via pam_rssh over forwarded SSH agent
 - `modules/nixos/restic-b2.nix` — Backblaze B2 backups with TPM-sealed creds; bucket derived from hostname (`murar8-${host}-restic`), paths/excludes via `local.restic.*`
-- `modules/nixos/healthchecks-runitor.nix` — systemd timer (every 15 min) pinging healthchecks.io via `runitor`; project ping key TPM-sealed at `/etc/healthchecks/ping-key.cred`, slug derived from `config.networking.hostName`. Check is declared in `tofu/healthchecks.tf`
+- `modules/nixos/healthchecks-runitor.nix` — systemd timer (every 15 min) pinging healthchecks.io via `runitor`; project ping key TPM-sealed at `/etc/healthchecks/ping-key.cred` (prodesk: `/persist/etc/healthchecks/ping-key.cred` via impermanence), slug derived from `config.networking.hostName`. Check is declared in `tofu/healthchecks.tf`
 - Networking (pick one): `static-ip.nix` (server), `bridge-networking.nix` (desktop), `networkmanager.nix` (laptop)
 - Tailscale: `tailscale-server.nix` (subnet routing, exit node) / `tailscale-client.nix` (operator mode)
 - Syncthing: `syncthing-server.nix` (system service, GUI on LAN, persistence) / `syncthing-client.nix` (user service)
@@ -82,9 +80,14 @@ Host opt-ins (beyond `common`, snapshot — authoritative source is `hosts/*/con
 - dash-to-dock: 3 hotkey families x 10 — all must be disabled to free Super+N
 - Keybinding conventions: Super=focus, +Shift=move, +Ctrl=geometry, +Alt=workspace; hjkl = arrows
 
+## OpenTofu
+
+- `tofu/` manages Tailscale ACLs, B2 buckets, and healthchecks.io checks
+- Apply runs only in CI (`.github/workflows/tofu.yml`): PRs run `tofu plan`, push to `main` runs `tofu apply` — never apply locally
+
 ## Tailscale Gotchas
 
-- Subnet routes need ACL grant in `tofu/policy.hujson`
+- Subnet routes need an ACL grant in `tofu/tailscale.tf` (advertise ≠ allow)
 - `extraUpFlags` only runs on first login; use `extraSetFlags` for persistent settings
 - Tailscale subnet routing captures LAN traffic to .130 — disconnect TS for Samba access
 

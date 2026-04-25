@@ -14,7 +14,6 @@ NixOS configurations for personal machines:
 - GPU passthrough (VFIO) and Looking Glass for Windows VMs
 - Remote LUKS unlock via SSH in initrd
 - Impermanence with btrfs rollback on boot (prodesk)
-- Reverse proxy with Tailscale auto-TLS (prodesk)
 
 ## Deploy
 
