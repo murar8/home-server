@@ -17,6 +17,7 @@
     flake.modules.nixos.tailscale-client
     flake.modules.nixos.syncthing-client
     flake.modules.nixos.initrd-ssh
+    flake.modules.nixos.initrd-numlock
     flake.modules.nixos.static-ip
     flake.modules.nixos.bridge-networking
     flake.modules.nixos.vfio-gpu

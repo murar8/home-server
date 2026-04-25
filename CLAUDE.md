@@ -23,7 +23,7 @@ Host opt-ins (beyond `common`, snapshot — authoritative source is `hosts/*/con
 - **thinkpad**: desktop, docker, gnome, keyd, restic-b2, tailscale-client, syncthing-client, fprintd, networkmanager, yubikey
 
 - `modules/nixos/common.nix` — foundation: imports `options`, `base`, `dotfiles`, `hardening-common`, `secure-boot`, `ssh`, disko, lanzaboote (all hosts import this)
-- `modules/nixos/options.nix` — shared `local.*` options (user, sshKey, stateVersion, net, tailnet, locale, etc.)
+- `modules/nixos/options.nix` — shared `local.*` options (user, sshKey, stateVersion, net, locale, etc.)
 - `modules/nixos/base.nix` — universal: nix settings + weekly GC, user, btrfs scrub
 - `modules/nixos/dotfiles.nix` — systemd oneshot that checks out dotfiles into user home
 - `modules/nixos/ssh.nix` — sshd config (key-only, no root, no TCP/stream forwarding, idle drop)
