@@ -34,6 +34,7 @@ jobs:
       TAILSCALE_TAILNET: ${{ secrets.TS_TAILNET }}
       B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
       B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+      TF_VAR_healthchecksio_api_key: ${{ secrets.HEALTHCHECKSIO_API_KEY }}
     steps:
       - uses: actions/checkout@v6
 

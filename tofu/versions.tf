@@ -10,6 +10,10 @@ terraform {
       source  = "Backblaze/b2"
       version = "~> 0.12"
     }
+    healthchecksio = {
+      source  = "kristofferahl/healthchecksio"
+      version = "~> 2.3"
+    }
   }
 
   backend "s3" {
