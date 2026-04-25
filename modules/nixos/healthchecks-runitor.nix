@@ -6,15 +6,6 @@
 }:
 
 {
-  environment.persistence."/persist".directories = [
-    {
-      directory = "/etc/healthchecks";
-      user = "root";
-      group = "root";
-      mode = "0700";
-    }
-  ];
-
   systemd = {
     tmpfiles.rules = [ "d /etc/healthchecks 0700 root root -" ];
 

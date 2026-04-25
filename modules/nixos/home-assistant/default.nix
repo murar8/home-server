@@ -1,8 +1,6 @@
 { config, ... }:
 
 {
-  environment.persistence."/persist".directories = [ "/var/lib/hass" ];
-
   networking.firewall.interfaces.${config.local.net.interface}.allowedTCPPorts = [
     config.services.home-assistant.config.http.server_port
   ];

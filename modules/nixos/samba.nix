@@ -48,8 +48,6 @@ in
     samba-wsdd.enable = true;
   };
 
-  environment.persistence."/persist".directories = [ "/var/lib/samba" ];
-
   systemd.tmpfiles.rules = [ "d /share 0755 ${config.local.user} users -" ];
 
   # LAN-only — not exposed on Tailscale

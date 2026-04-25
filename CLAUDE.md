@@ -58,8 +58,8 @@ Host opt-ins (beyond `common`, snapshot — authoritative source is `hosts/*/con
 
 ## Prodesk Gotchas
 
-- **Impermanence**: root btrfs subvol wiped every boot; any new service storing state needs an explicit persistence entry in its module
-- **Persistence ownership**: each module owns its config, persistence, firewall, and hardening
+- **Impermanence**: root btrfs subvol wiped every boot; any new service storing state on prodesk needs a persistence entry in `hosts/prodesk/configuration.nix`
+- **Persistence ownership**: service-specific persistence (state dirs, credential dirs) lives in the host that imports impermanence — service modules must not declare `environment.persistence` so they stay portable to non-impermanence hosts. The `impermanence` module itself owns the foundational persistence (system dirs, ssh host keys, user dotdirs). Modules still own their config, firewall, and hardening.
 - LUKS uses 4096-byte sectors; partition size must be multiple of 8 x 512-byte sectors or `cryptsetup resize` fails
 - TPM2 modules (`tpm_tis`, `tpm_crb`) must be in `initrd.availableKernelModules` — SATA boots faster than USB, causing TPM race
 - TPM2 re-enroll after SB key changes: `sudo systemd-cryptenroll --wipe-slot=tpm2 --tpm2-device=auto --tpm2-pcrs=7 /dev/disk/by-partlabel/disk-main-luks`

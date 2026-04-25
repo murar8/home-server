@@ -1,4 +1,4 @@
-{ flake, ... }:
+{ config, flake, ... }:
 
 {
   imports = [
@@ -21,6 +21,9 @@
 
   networking.hostName = "prodesk";
 
+  boot.initrd.availableKernelModules = [ "r8169" ];
+  modules.initrd-ssh.hostKeys = [ "/persist/etc/secrets/initrd/ssh_host_ed25519_key" ];
+
   local = {
     net.ip = "192.168.1.130";
     net.interface = "enp1s0";
@@ -35,15 +38,27 @@
     };
   };
 
-  environment.persistence."/persist".directories = [
-    {
-      directory = "/etc/restic";
-      user = "root";
-      group = "root";
-      mode = "0700";
-    }
-  ];
-
-  boot.initrd.availableKernelModules = [ "r8169" ];
-  modules.initrd-ssh.hostKeys = [ "/persist/etc/secrets/initrd/ssh_host_ed25519_key" ];
+  environment.persistence."/persist" = {
+    users.${config.local.user}.directories = [
+      ".config/syncthing"
+      "Documents"
+    ];
+    directories = [
+      "/var/lib/hass"
+      "/var/lib/samba"
+      "/var/lib/tailscale"
+      {
+        directory = "/etc/healthchecks";
+        user = "root";
+        group = "root";
+        mode = "0700";
+      }
+      {
+        directory = "/etc/restic";
+        user = "root";
+        group = "root";
+        mode = "0700";
+      }
+    ];
+  };
 }
