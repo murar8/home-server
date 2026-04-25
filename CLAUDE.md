@@ -20,7 +20,7 @@ Flake uses [numtide/blueprint](https://github.com/numtide/blueprint) for convent
 
 Host opt-ins (beyond `common`, snapshot — authoritative source is `hosts/*/configuration.nix`):
 
-- **prodesk** (server): auto-upgrade, caddy, hardening, healthchecks-runitor, home-assistant, impermanence, initrd-ssh, static-ip, sudo-ssh-agent, restic-b2, tailscale-server, syncthing-server, samba
+- **prodesk** (server): auto-upgrade, hardening, healthchecks-runitor, home-assistant, impermanence, initrd-ssh, static-ip, sudo-ssh-agent, restic-b2, tailscale-server, syncthing-server, samba
 - **desktop**: desktop, docker, gnome, keyd, restic-b2, tailscale-client, syncthing-client, initrd-ssh, static-ip, bridge-networking, vfio-gpu, looking-glass, virt-manager, wol-vm-start, yubikey
 - **thinkpad**: desktop, docker, gnome, keyd, restic-b2, tailscale-client, syncthing-client, fprintd, networkmanager, yubikey
 
@@ -42,9 +42,8 @@ Host opt-ins (beyond `common`, snapshot — authoritative source is `hosts/*/con
 - `modules/nixos/restic-b2.nix` — Backblaze B2 backups with TPM-sealed creds; bucket derived from hostname (`murar8-${host}-restic`), paths/excludes via `local.restic.*`
 - `modules/nixos/healthchecks-runitor.nix` — systemd timer (every 15 min) pinging healthchecks.io via `runitor`; project ping key TPM-sealed at `/etc/healthchecks/ping-key.cred`, slug derived from `config.networking.hostName`. Check is declared in `tofu/healthchecks.tf`
 - Networking (pick one): `static-ip.nix` (server), `bridge-networking.nix` (desktop), `networkmanager.nix` (laptop)
-- Tailscale: `tailscale-server.nix` (subnet routing, exit node, Caddy cert uid) / `tailscale-client.nix` (operator mode)
+- Tailscale: `tailscale-server.nix` (subnet routing, exit node) / `tailscale-client.nix` (operator mode)
 - Syncthing: `syncthing-server.nix` (system service, GUI on LAN, persistence) / `syncthing-client.nix` (user service)
-- `modules/nixos/caddy.nix` — Caddy reverse proxy + systemd hardening + persistence
 - `modules/nixos/home-assistant/` — Home Assistant + lovelace dashboard
 - `modules/nixos/samba.nix` — Samba file sharing
 - `modules/nixos/impermanence/` — btrfs root rollback, persistence base dirs
@@ -85,7 +84,6 @@ Host opt-ins (beyond `common`, snapshot — authoritative source is `hosts/*/con
 
 ## Tailscale Gotchas
 
-- `permitCertUid = "caddy"` required for Caddy to fetch TLS certs
 - Subnet routes need ACL grant in `tofu/policy.hujson`
 - `extraUpFlags` only runs on first login; use `extraSetFlags` for persistent settings
 - Tailscale subnet routing captures LAN traffic to .130 — disconnect TS for Samba access

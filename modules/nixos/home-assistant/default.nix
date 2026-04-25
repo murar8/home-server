@@ -1,12 +1,8 @@
 { config, ... }:
 
-let
-  fqdn = "${config.networking.hostName}.${config.local.tailnet}";
-in
 {
   environment.persistence."/persist".directories = [ "/var/lib/hass" ];
 
-  # LAN-only — Tailscale access is via Caddy reverse proxy
   networking.firewall.interfaces.${config.local.net.interface}.allowedTCPPorts = [
     config.services.home-assistant.config.http.server_port
   ];
@@ -25,15 +21,7 @@ in
       homeassistant = {
         name = "Home";
         unit_system = "metric";
-        external_url = "https://${fqdn}";
         internal_url = "http://${config.local.net.ip}:${toString config.services.home-assistant.config.http.server_port}";
-      };
-      http = {
-        use_x_forwarded_for = true;
-        trusted_proxies = [
-          "127.0.0.1"
-          "::1"
-        ];
       };
     };
     lovelaceConfig = import ./lovelace.nix;
