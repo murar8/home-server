@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, lib, ... }:
 
 let
   # https://wiki.nixos.org/wiki/Systemd_Hardening
@@ -18,6 +18,14 @@ let
   };
 in
 {
+  assertions = [
+    {
+      assertion =
+        lib.hasPrefix "192.168.1." config.local.net.gateway && config.local.net.prefixLength == 24;
+      message = "samba: hardcoded \"hosts allow\" assumes 192.168.1.0/24, got ${config.local.net.gateway}/${toString config.local.net.prefixLength}.";
+    }
+  ];
+
   services = {
     samba = {
       enable = true;
@@ -32,7 +40,7 @@ in
           "security" = "user";
           "server min protocol" = "SMB3";
           "server smb encrypt" = "required";
-          "hosts allow" = "${config.local.net.subnetPrefix} 127.0.0.1 localhost";
+          "hosts allow" = "192.168.1. 127.0.0.1 localhost";
           "hosts deny" = "0.0.0.0/0";
         };
         share = {

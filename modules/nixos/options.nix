@@ -27,16 +27,6 @@
             type = lib.types.int;
             default = 24;
           };
-          subnet = lib.mkOption {
-            description = "Subnet address.";
-            type = lib.types.str;
-            default = "192.168.1.0";
-          };
-          subnetPrefix = lib.mkOption {
-            description = "Subnet prefix for host matching (e.g. \"192.168.1.\").";
-            type = lib.types.str;
-            default = "192.168.1.";
-          };
           gateway = lib.mkOption {
             description = "Default gateway.";
             type = lib.types.str;

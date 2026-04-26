@@ -1,45 +1,37 @@
-{ config, lib, ... }:
+{ config, ... }:
 
 let
-  cfg = config.modules.bridge-networking;
+  bridgeName = "br0";
 in
 {
-  options.modules.bridge-networking.name = lib.mkOption {
-    type = lib.types.str;
-    default = "br0";
-    description = "Bridge interface name.";
-  };
+  assertions = [
+    {
+      assertion = config.networking.useNetworkd;
+      message = "bridge-networking requires systemd-networkd (networking.useNetworkd).";
+    }
+  ];
 
-  config = {
-    assertions = [
-      {
-        assertion = config.networking.useNetworkd;
-        message = "bridge-networking requires systemd-networkd (networking.useNetworkd).";
-      }
-    ];
-
-    systemd.network = {
-      links."20-${config.local.net.interface}" = {
-        matchConfig.OriginalName = config.local.net.interface;
-        linkConfig.WakeOnLan = "magic";
+  systemd.network = {
+    links."20-${config.local.net.interface}" = {
+      matchConfig.OriginalName = config.local.net.interface;
+      linkConfig.WakeOnLan = "magic";
+    };
+    netdevs."20-${bridgeName}".netdevConfig = {
+      Name = bridgeName;
+      Kind = "bridge";
+    };
+    networks = {
+      "20-${config.local.net.interface}" = {
+        matchConfig.Name = config.local.net.interface;
+        networkConfig.Bridge = bridgeName;
+        # Override static-ip defaults — address/gateway move to the bridge
+        address = [ ];
+        gateway = [ ];
       };
-      netdevs."20-${cfg.name}".netdevConfig = {
-        Name = cfg.name;
-        Kind = "bridge";
-      };
-      networks = {
-        "20-${config.local.net.interface}" = {
-          matchConfig.Name = config.local.net.interface;
-          networkConfig.Bridge = cfg.name;
-          # Override static-ip defaults — address/gateway move to the bridge
-          address = [ ];
-          gateway = [ ];
-        };
-        "20-${cfg.name}" = {
-          matchConfig.Name = cfg.name;
-          address = [ "${config.local.net.ip}/${toString config.local.net.prefixLength}" ];
-          gateway = [ config.local.net.gateway ];
-        };
+      "20-${bridgeName}" = {
+        matchConfig.Name = bridgeName;
+        address = [ "${config.local.net.ip}/${toString config.local.net.prefixLength}" ];
+        gateway = [ config.local.net.gateway ];
       };
     };
   };

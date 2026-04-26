@@ -66,7 +66,8 @@ in
     initrd.systemd.enable = true;
     loader.timeout = 1;
     tmp.useTmpfs = true;
-    # TODO: remove when nixpkgs#494001 is backported to nixos-25.11
+    # Mountpoint workaround for envfs + systemd-initrd; identical to the fix
+    # merged in nixpkgs#494001. Drop once that lands in nixos-25.11.
     initrd.systemd.tmpfiles.settings."50-envfs" = {
       "/sysroot/usr/bin".d = {
         group = "root";

@@ -19,4 +19,6 @@
   ];
 
   networking.hostName = "thinkpad";
+  local.net.ip = "192.168.1.141";
+  local.net.interface = "enp2s0f0";
 }
