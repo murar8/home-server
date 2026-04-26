@@ -3,6 +3,9 @@ _:
 {
   services.openssh = {
     enable = true;
+    # https://xeiaso.net/blog/paranoid-nixos-2021-07-18/
+    # disable SFTP subsystem — unused, removes a code-exec surface inside sshd
+    allowSFTP = false;
     settings = {
       PermitRootLogin = "no";
       PasswordAuthentication = false;
