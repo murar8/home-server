@@ -43,10 +43,12 @@ in
     after = [ "dbus.socket" ];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = toString (
-        pkgs.writeShellScript "dconf-reset" (
-          builtins.concatStringsSep "\n" (map (k: "${pkgs.dconf}/bin/dconf reset ${k}") dconfKeys)
-        )
+      ExecStart = lib.getExe (
+        pkgs.writeShellApplication {
+          name = "dconf-reset";
+          runtimeInputs = [ pkgs.dconf ];
+          text = builtins.concatStringsSep "\n" (map (k: "dconf reset '${k}'") dconfKeys);
+        }
       );
     };
   };

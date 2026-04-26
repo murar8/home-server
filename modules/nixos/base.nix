@@ -5,6 +5,9 @@
   ...
 }:
 
+let
+  keyMap = "us";
+in
 {
   environment.systemPackages = [
     pkgs.git
@@ -13,11 +16,14 @@
     pkgs.rsync
   ];
 
-  system.stateVersion = config.local.stateVersion;
+  system.stateVersion = "25.11";
 
-  networking.nameservers = config.local.nameservers;
+  networking.nameservers = [
+    "9.9.9.9"
+    "149.112.112.112"
+  ];
 
-  time.timeZone = config.local.timeZone;
+  time.timeZone = "Europe/Madrid";
 
   nix = {
     gc = {
@@ -45,13 +51,16 @@
   '';
 
   i18n = {
-    defaultLocale = config.local.locale;
-    inherit (config.local) supportedLocales;
+    defaultLocale = "es_ES.UTF-8";
+    supportedLocales = [
+      "es_ES.UTF-8/UTF-8"
+      "en_US.UTF-8/UTF-8"
+    ];
   };
 
-  console.keyMap = config.local.keyMap;
+  console.keyMap = keyMap;
 
-  services.xserver.xkb.layout = config.local.keyMap;
+  services.xserver.xkb.layout = keyMap;
 
   boot = {
     initrd.systemd.enable = true;

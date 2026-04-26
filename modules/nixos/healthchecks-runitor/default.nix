@@ -45,6 +45,7 @@
           "~@privileged"
         ];
         LoadCredentialEncrypted = [ "ping-key:/etc/healthchecks/ping-key.cred" ];
+        Environment = [ "HC_SLUG=${config.networking.hostName}-heartbeat" ];
         ExecStart = lib.getExe (
           pkgs.writeShellApplication {
             name = "healthchecks-heartbeat";
@@ -52,12 +53,7 @@
               pkgs.runitor
               pkgs.coreutils
             ];
-            text = ''
-              runitor \
-                -ping-key "$(cat "$CREDENTIALS_DIRECTORY/ping-key")" \
-                -slug ${config.networking.hostName}-heartbeat \
-                -- true
-            '';
+            text = builtins.readFile ./heartbeat.sh;
           }
         );
       };

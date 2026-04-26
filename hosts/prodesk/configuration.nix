@@ -30,10 +30,10 @@
     restic = {
       paths = [ "/persist" ];
       exclude = [
-        "/persist/var/lib/systemd/coredump"
-        "/persist/var/lib/fwupd"
-        "/persist/var/log"
         "/persist/home/murar8/Documents"
+        "/persist/var/lib/fwupd"
+        "/persist/var/lib/systemd/coredump"
+        "/persist/var/log"
       ];
     };
   };

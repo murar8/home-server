@@ -23,7 +23,7 @@ Host opt-ins (beyond `common`, snapshot — authoritative source is `hosts/*/con
 - **thinkpad**: desktop, docker, gnome, keyd, restic-b2, tailscale-client, syncthing-client, fprintd, networkmanager, yubikey
 
 - `modules/nixos/common.nix` — foundation: imports `options`, `base`, `dotfiles`, `hardening-common`, `secure-boot`, `ssh`, disko, lanzaboote (all hosts import this)
-- `modules/nixos/options.nix` — shared `local.*` options (user, sshKey, stateVersion, net, locale, etc.)
+- `modules/nixos/options.nix` — shared `local.*` options consumed by 2+ unrelated modules (`user`, `sshKey`, `net`)
 - `modules/nixos/base.nix` — universal: nix settings + weekly GC, user, btrfs scrub
 - `modules/nixos/dotfiles.nix` — systemd oneshot that checks out dotfiles into user home
 - `modules/nixos/ssh.nix` — sshd config (key-only, no root, no TCP/stream forwarding, idle drop)
@@ -52,9 +52,15 @@ Host opt-ins (beyond `common`, snapshot — authoritative source is `hosts/*/con
 
 ## Code Style
 
-- Order attributes light-to-heavy: one-liners first, blocks last ("b shape")
 - Modules that take no args use `_:` not `{ ... }:` (statix enforces this)
 - Shell scripts live alongside their `.nix` module, loaded via `writeShellApplication` + `builtins.readFile`
+
+## Module Conventions
+
+- **File splits**: one module = one host opt-in capability. Single `.nix` until you need a non-`.nix` asset (script/data) or there's a self-contained chunk worth lifting. `lib/` for pure helpers — no "utility" modules. Promote into `common.nix` only when all hosts already import explicitly.
+- **Options vs `let` vs inline**: promote to `lib.mkOption` only on (a) **variance** — 2+ hosts need different values, (b) **cross-module** — 2+ unrelated modules read it, or (c) **per-host identity/secret** — YubiKey keys, host SSH keys, B2 creds. Otherwise inline (single use), `let` (multi-use in module), or `let` in a dir's `default.nix` / `lib/` (cross-module reuse). "User-facing knob" alone isn't enough.
+- **Where options live**: module-specific options live in the module that reads them. `options.nix` only holds options consumed by 2+ unrelated modules or the host.
+- **Don't pre-split, pre-option, or pre-promote.** Wait for the second caller, the second host, or actual variance.
 
 ## Prodesk Gotchas
 

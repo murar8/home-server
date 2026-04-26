@@ -1,5 +1,8 @@
 { pkgs, inputs, ... }:
 
+let
+  llmAgents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
+in
 {
   nixpkgs.config.allowUnfree = true;
 
@@ -29,50 +32,35 @@
   };
 
   environment.systemPackages = with pkgs; [
-    # browsers
-    google-chrome
-
-    # communication
-    discord
-    slack
-
-    # ai
-    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
-    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode
-
-    # terminals & editors
-    ghostty
-    nodejs
-    python3
-    tree-sitter
-    unzip
-
-    # dev tools
-    gcc
-
-    # cli tools
     curl
     delta
+    discord
+    e2fsprogs
     fd
     fzf
+    gcc
     gh
+    ghostty
+    google-chrome
+    htop
     imagemagick
     jq
     lazygit
+    llmAgents.claude-code
+    llmAgents.opencode
+    lsof
+    mongodb-compass
+    nodejs
+    pciutils
+    python3
     ripgrep
+    scrcpy
+    slack
+    tree-sitter
+    unzip
+    usbutils
     wget
     wl-clipboard
-
-    # system
-    e2fsprogs
-    htop
-    lsof
-    pciutils
-    usbutils
-
-    # utilities
-    mongodb-compass
-    scrcpy
   ];
 
 }
