@@ -1,6 +1,6 @@
 # Shared base for VFIO GPU passthrough Windows 11 VMs.
 # Takes inputs, then per-VM params, and returns a NixVirt domain XML derivation.
-{ NixVirt }:
+{ NixVirt, pkgs }:
 
 {
   name,
@@ -90,12 +90,22 @@ NixVirt.lib.domain.writeXML {
   };
 
   os = {
-    firmware = "efi";
     type = "hvm";
     arch = "x86_64";
     machine = "pc-q35-10.0";
+    # Explicit OVMFFull loader + ms-keys vars template — required for EAC /
+    # anti-cheat to see Secure Boot State: On inside Windows. SMM enforcement
+    # comes from features.smm below; firmware autoselect can't be used because
+    # no descriptor advertises this exact vars template path.
+    loader = {
+      path = "${pkgs.OVMFFull.fd}/FV/OVMF_CODE.fd";
+      readonly = true;
+      type = "pflash";
+    };
     nvram = {
       path = "/var/lib/libvirt/qemu/nvram/${name}_VARS.fd";
+      template = "${pkgs.OVMFFull.fd}/FV/OVMF_VARS.ms.fd";
+      templateFormat = "raw";
     };
     smbios = {
       mode = "host";
@@ -193,6 +203,13 @@ NixVirt.lib.domain.writeXML {
       {
         policy = "require";
         name = "svm";
+      }
+      # Hide the hypervisor CPUID flag from the guest. EAC and other anti-cheat
+      # read this bit directly; without disabling it, KVM-hidden + Hyper-V
+      # vendor spoofing isn't enough.
+      {
+        policy = "disable";
+        name = "hypervisor";
       }
     ];
   };

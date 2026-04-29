@@ -50,6 +50,7 @@ in
     llmAgents.opencode
     lsof
     mongodb-compass
+    moonlight-qt
     nodejs
     pciutils
     python3
