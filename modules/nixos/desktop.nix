@@ -6,6 +6,10 @@ in
 {
   nixpkgs.config.allowUnfree = true;
 
+  # https://www.kernel.org/doc/Documentation/admin-guide/sysrq.rst
+  # reisub: keyboard (4) + signaling (64) + sync (16) + remount-ro (32) + reboot (128)
+  boot.kernel.sysctl."kernel.sysrq" = 244;
+
   programs.nix-ld.enable = true;
 
   hardware = {
@@ -47,7 +51,7 @@ in
     jq
     lazygit
     llmAgents.claude-code
-    llmAgents.opencode
+    llmAgents.pi
     lsof
     mongodb-compass
     moonlight-qt

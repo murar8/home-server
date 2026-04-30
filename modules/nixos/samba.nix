@@ -1,22 +1,5 @@
 { config, lib, ... }:
 
-let
-  # https://wiki.nixos.org/wiki/Systemd_Hardening
-  sambaHardening = {
-    ProtectKernelTunables = true;
-    ProtectKernelModules = true;
-    ProtectKernelLogs = true;
-    ProtectControlGroups = true;
-    ProtectClock = true;
-    ProtectHostname = true;
-    NoNewPrivileges = true;
-    LockPersonality = true;
-    RestrictRealtime = true;
-    RestrictSUIDSGID = true;
-    ProtectSystem = "full";
-    ProtectHome = true;
-  };
-in
 {
   assertions = [
     {
@@ -56,7 +39,149 @@ in
     samba-wsdd.enable = true;
   };
 
-  systemd.tmpfiles.rules = [ "d /share 0755 ${config.local.user} users -" ];
+  systemd = {
+    tmpfiles.rules = [ "d /share 0755 ${config.local.user} users -" ];
+
+    # Sandboxes emitted by `shh service start-profile --mode aggressive`.
+    services.samba-smbd.serviceConfig = {
+      ProtectSystem = "full";
+      ProtectHome = true;
+      PrivateDevices = true;
+      PrivateMounts = true;
+      ProtectKernelTunables = true;
+      ProtectKernelModules = true;
+      ProtectKernelLogs = true;
+      ProtectControlGroups = true;
+      LockPersonality = true;
+      RestrictRealtime = true;
+      ProtectClock = true;
+      MemoryDenyWriteExecute = true;
+      SystemCallArchitectures = "native";
+      RestrictAddressFamilies = [
+        "AF_INET"
+        "AF_INET6"
+        "AF_NETLINK"
+        "AF_UNIX"
+      ];
+      SocketBindDeny = [
+        "ipv4:udp"
+        "ipv6:udp"
+      ];
+      CapabilityBoundingSet =
+        "~"
+        + lib.concatStringsSep " " [
+          "CAP_BLOCK_SUSPEND"
+          "CAP_BPF"
+          "CAP_CHOWN"
+          "CAP_IPC_LOCK"
+          "CAP_MKNOD"
+          "CAP_NET_RAW"
+          "CAP_PERFMON"
+          "CAP_SYS_BOOT"
+          "CAP_SYS_CHROOT"
+          "CAP_SYS_MODULE"
+          "CAP_SYS_NICE"
+          "CAP_SYS_PACCT"
+          "CAP_SYS_PTRACE"
+          "CAP_SYS_TIME"
+          "CAP_SYSLOG"
+          "CAP_WAKE_ALARM"
+        ];
+      SystemCallFilter =
+        "~"
+        + lib.concatStringsSep " " [
+          "@aio:EPERM"
+          "@chown:EPERM"
+          "@clock:EPERM"
+          "@cpu-emulation:EPERM"
+          "@debug:EPERM"
+          "@keyring:EPERM"
+          "@memlock:EPERM"
+          "@module:EPERM"
+          "@mount:EPERM"
+          "@obsolete:EPERM"
+          "@pkey:EPERM"
+          "@raw-io:EPERM"
+          "@reboot:EPERM"
+          "@resources:EPERM"
+          "@sandbox:EPERM"
+          "@swap:EPERM"
+          "@sync:EPERM"
+        ];
+    };
+
+    services.samba-nmbd.serviceConfig = {
+      ProtectSystem = "full";
+      ProtectHome = true;
+      PrivateTmp = "disconnected";
+      PrivateDevices = true;
+      PrivateMounts = true;
+      ProtectKernelTunables = true;
+      ProtectKernelModules = true;
+      ProtectKernelLogs = true;
+      ProtectControlGroups = true;
+      ProtectProc = "ptraceable";
+      LockPersonality = true;
+      RestrictRealtime = true;
+      ProtectClock = true;
+      MemoryDenyWriteExecute = true;
+      SystemCallArchitectures = "native";
+      RestrictAddressFamilies = [
+        "AF_INET"
+        "AF_NETLINK"
+        "AF_UNIX"
+      ];
+      SocketBindDeny = [
+        "ipv4:tcp"
+        "ipv6:tcp"
+        "ipv6:udp"
+      ];
+      CapabilityBoundingSet =
+        "~"
+        + lib.concatStringsSep " " [
+          "CAP_BLOCK_SUSPEND"
+          "CAP_BPF"
+          "CAP_CHOWN"
+          "CAP_IPC_LOCK"
+          "CAP_MKNOD"
+          "CAP_NET_RAW"
+          "CAP_PERFMON"
+          "CAP_SYS_BOOT"
+          "CAP_SYS_CHROOT"
+          "CAP_SYS_MODULE"
+          "CAP_SYS_NICE"
+          "CAP_SYS_PACCT"
+          "CAP_SYS_PTRACE"
+          "CAP_SYS_TIME"
+          "CAP_SYSLOG"
+          "CAP_WAKE_ALARM"
+        ];
+      SystemCallFilter =
+        "~"
+        + lib.concatStringsSep " " [
+          "@aio:EPERM"
+          "@chown:EPERM"
+          "@clock:EPERM"
+          "@cpu-emulation:EPERM"
+          "@debug:EPERM"
+          "@keyring:EPERM"
+          "@memlock:EPERM"
+          "@module:EPERM"
+          "@mount:EPERM"
+          "@obsolete:EPERM"
+          "@pkey:EPERM"
+          "@privileged:EPERM"
+          "@raw-io:EPERM"
+          "@reboot:EPERM"
+          "@resources:EPERM"
+          "@sandbox:EPERM"
+          "@setuid:EPERM"
+          "@swap:EPERM"
+          "@sync:EPERM"
+          "@timer:EPERM"
+        ];
+    };
+  };
 
   # LAN-only — not exposed on Tailscale
   networking.firewall.interfaces.${config.local.net.interface} = {
@@ -69,12 +194,5 @@ in
       138
       3702
     ];
-  };
-
-  # https://wiki.nixos.org/wiki/Systemd_Hardening
-  # sandbox samba: runs as root for auth but doesn't need kernel/hw access
-  systemd.services = {
-    samba-smbd.serviceConfig = sambaHardening;
-    samba-nmbd.serviceConfig = sambaHardening;
   };
 }

@@ -14,9 +14,17 @@ in
     pkgs.nano
     inputs.nixpkgs-unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.neovim
     pkgs.rsync
+    pkgs.shh
   ];
 
   system.stateVersion = "25.11";
+
+  # https://xeiaso.net/blog/paranoid-nixos-2021-07-18/
+  # Universal hardening (not covered by lynis since these aren't sysctls):
+  # keep service accounts out of the nix daemon, and prevent non-wheel users
+  # from invoking the sudo binary at all.
+  nix.settings.allowed-users = [ "@wheel" ];
+  security.sudo.execWheelOnly = true;
 
   networking.nameservers = [
     "9.9.9.9"

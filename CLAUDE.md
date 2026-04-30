@@ -18,18 +18,17 @@ Flake uses [numtide/blueprint](https://github.com/numtide/blueprint) for convent
 
 Host opt-ins (beyond `common`, snapshot — authoritative source is `hosts/*/configuration.nix`):
 
-- **prodesk** (server): auto-upgrade, hardening, healthchecks-runitor, home-assistant, impermanence, initrd-ssh, static-ip, sudo-ssh-agent, restic-b2, tailscale-server, syncthing-server, samba
-- **desktop**: desktop, docker, gnome, keyd, restic-b2, tailscale-client, syncthing-client, initrd-ssh, static-ip, bridge-networking, vfio-gpu, looking-glass, virt-manager, wol-vm-start, yubikey
-- **thinkpad**: desktop, docker, gnome, keyd, restic-b2, tailscale-client, syncthing-client, fprintd, networkmanager, yubikey
+- **prodesk** (server): auto-upgrade, healthchecks-runitor, home-assistant, impermanence, initrd-ssh, static-ip, sudo-ssh-agent, restic-b2, tailscale-server, syncthing-server, samba
+- **desktop**: desktop, docker, gnome, keyd, restic-b2, tailscale-client, syncthing-client, initrd-ssh, initrd-numlock, static-ip, bridge-networking, vfio-gpu, looking-glass, virt-manager, wol-vm-start, yubikey
+- **thinkpad**: desktop, docker, gnome, keyd, restic-b2, tailscale-client, syncthing-client, fprintd, initrd-numlock, networkmanager, yubikey
 
-- `modules/nixos/common.nix` — foundation: imports `options`, `base`, `dotfiles`, `hardening-common`, `secure-boot`, `ssh`, disko, lanzaboote (all hosts import this)
+- `modules/nixos/common.nix` — foundation: imports `options`, `base`, `dotfiles`, `lynis`, `secure-boot`, `ssh`, disko, lanzaboote (all hosts import this)
 - `modules/nixos/options.nix` — shared `local.*` options consumed by 2+ unrelated modules (`user`, `sshKey`, `net`)
-- `modules/nixos/base.nix` — universal: nix settings + weekly GC, user, btrfs scrub
+- `modules/nixos/base.nix` — universal: nix settings + weekly GC, user, btrfs scrub, wheel-only nix/sudo
+- `modules/nixos/lynis.nix` — universal: lynis package + `/etc/lynis/custom.prf` skip profile, auditd, lynis-driven sysctls (replaces deleted `hardening*.nix`)
 - `modules/nixos/dotfiles.nix` — systemd oneshot that checks out dotfiles into user home
 - `modules/nixos/ssh.nix` — sshd config (key-only, no root, no TCP/stream forwarding, idle drop)
-- `modules/nixos/hardening-common.nix` — universal hardening (sysctl, kptr, yama, wheel-only nix/sudo)
 - `modules/nixos/secure-boot.nix` — lanzaboote secure boot (all hosts import this)
-- `modules/nixos/hardening.nix` — server-only hardening (auditd, modprobe blacklist, martians) on top of hardening-common
 - `modules/nixos/desktop.nix` — desktop baseline: pipewire, hardware, packages
 - `modules/nixos/keyd.nix` — keyboard daemon (Caps Lock → Escape/Ctrl)
 - `modules/nixos/docker.nix` — Docker daemon + lazydocker
@@ -46,9 +45,18 @@ Host opt-ins (beyond `common`, snapshot — authoritative source is `hosts/*/con
 - `modules/nixos/samba.nix` — Samba file sharing
 - `modules/nixos/impermanence/` — btrfs root rollback, persistence base dirs
 - `modules/nixos/initrd-ssh.nix` — initrd SSH for remote disk unlock
+- `modules/nixos/initrd-numlock.nix` — toggles NumLock in initrd for LUKS passphrase entry
 - `modules/nixos/auto-upgrade.nix` — automatic flake-based upgrades
 - Virtualization: `vfio-gpu.nix`, `looking-glass.nix`, `virt-manager/`, `wol-vm-start/`
 - Only `common.nix` may import other modules; all other modules are wired by hosts explicitly
+
+## Hardening Workflow
+
+- Per-unit sandboxing via `shh service start-profile --mode aggressive <unit>` → exercise → `finish-profile`. If finish times out, output is still in journal: `journalctl _PID=<ExecStopPost-pid> --no-pager -o cat`
+- When a unit's behavior changes (new path, new syscall, new cred), regenerate: rerun `shh service start-profile`, exercise the new path, replace the emitted `serviceConfig` block in the module. Don't hand-edit the denylists — drift defeats the "shh is the source of truth" model.
+- shh resolver panics on some traces (e.g. restic). Workaround: `shh run --mode aggressive -- <cmd>` outside the unit, Ctrl-C on completion (resolver runs post-trace; SIGINT emits best-so-far)
+- strace blocks file capabilities at execve — services using `security.wrappers.<x>` with `capabilities=` need to switch to `serviceConfig.AmbientCapabilities` before shh can trace them
+- lynis system audit: `sudo lynis audit system`; skips in `custom.prf` as `skip-test=ID` or `skip-test=ID:detail` with one-line reason
 
 ## Code Style
 
@@ -113,6 +121,9 @@ Host opt-ins (beyond `common`, snapshot — authoritative source is `hosts/*/con
 - Remote rebuild must always use `--build-host` (nix-copy-closure fails with "lacks a signature")
 - SSH keys are in Bitwarden agent (no files on disk) — use `ssh-add -L | grep lnzmrr` to extract public key
 - Prodesk has no `rsync`/`parted`/`sgdisk` — use `nix-shell -p <pkg>` or `nix run`
+- Blueprint: `modules/nixos/<name>.nix` and `modules/nixos/<name>/default.nix` both produce `flake.modules.nixos.<name>` — having both silently shadows one and freezes the derivation hash
+- Use `$(< file)` not `$(cat file)` when `SystemCallFilter` denies `@ipc` (blocks pipe). `read -r VAR < file` exits 1 without trailing newline → `set -e` kills script
+- `systemd-creds decrypt /path/<name>.cred` checks embedded-name == basename; pass `--name=<embedded>` to override (same on encrypt)
 
 ## Installer Pitfalls
 

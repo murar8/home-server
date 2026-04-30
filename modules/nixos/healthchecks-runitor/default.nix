@@ -16,35 +16,82 @@
       serviceConfig = {
         Type = "oneshot";
         DynamicUser = true;
-        PrivateUsers = true;
-        UMask = "0077";
-        NoNewPrivileges = true;
-        PrivateDevices = true;
-        PrivateTmp = true;
-        ProcSubset = "pid";
-        ProtectClock = true;
-        ProtectControlGroups = true;
-        ProtectHome = true;
-        ProtectHostname = true;
-        ProtectKernelModules = true;
-        ProtectKernelTunables = true;
-        ProtectProc = "invisible";
+        LoadCredentialEncrypted = [ "ping-key:/etc/healthchecks/ping-key.cred" ];
+
+        # Sandbox: emitted by `shh service start-profile --mode aggressive`.
         ProtectSystem = "strict";
+        ProtectHome = true;
+        PrivateTmp = "disconnected";
+        PrivateDevices = true;
+        PrivateMounts = true;
+        ProtectKernelTunables = true;
+        ProtectKernelModules = true;
+        ProtectKernelLogs = true;
+        ProtectControlGroups = true;
         LockPersonality = true;
+        RestrictRealtime = true;
+        ProtectClock = true;
         MemoryDenyWriteExecute = true;
-        RestrictNamespaces = true;
-        RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
-        CapabilityBoundingSet = "";
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
+          "AF_NETLINK"
+          "AF_UNIX"
         ];
-        SystemCallFilter = [
-          "@system-service"
-          "~@privileged"
+        SocketBindDeny = [
+          "ipv4:tcp"
+          "ipv4:udp"
+          "ipv6:tcp"
+          "ipv6:udp"
         ];
-        LoadCredentialEncrypted = [ "ping-key:/etc/healthchecks/ping-key.cred" ];
+        CapabilityBoundingSet =
+          "~"
+          + lib.concatStringsSep " " [
+            "CAP_BLOCK_SUSPEND"
+            "CAP_BPF"
+            "CAP_CHOWN"
+            "CAP_IPC_LOCK"
+            "CAP_KILL"
+            "CAP_MKNOD"
+            "CAP_NET_RAW"
+            "CAP_PERFMON"
+            "CAP_SYS_BOOT"
+            "CAP_SYS_CHROOT"
+            "CAP_SYS_MODULE"
+            "CAP_SYS_NICE"
+            "CAP_SYS_PACCT"
+            "CAP_SYS_PTRACE"
+            "CAP_SYS_TIME"
+            "CAP_SYS_TTY_CONFIG"
+            "CAP_SYSLOG"
+            "CAP_WAKE_ALARM"
+          ];
+        SystemCallFilter =
+          "~"
+          + lib.concatStringsSep " " [
+            "@aio:EPERM"
+            "@chown:EPERM"
+            "@clock:EPERM"
+            "@cpu-emulation:EPERM"
+            "@debug:EPERM"
+            "@keyring:EPERM"
+            "@memlock:EPERM"
+            "@module:EPERM"
+            "@mount:EPERM"
+            "@obsolete:EPERM"
+            "@pkey:EPERM"
+            "@privileged:EPERM"
+            "@raw-io:EPERM"
+            "@reboot:EPERM"
+            "@resources:EPERM"
+            "@sandbox:EPERM"
+            "@setuid:EPERM"
+            "@swap:EPERM"
+            "@sync:EPERM"
+            "@timer:EPERM"
+          ];
+
         Environment = [ "HC_SLUG=${config.networking.hostName}-heartbeat" ];
         ExecStart = lib.getExe (
           pkgs.writeShellApplication {

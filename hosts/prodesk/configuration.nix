@@ -4,7 +4,6 @@
   imports = [
     flake.modules.nixos.common
     flake.modules.nixos.auto-upgrade
-    flake.modules.nixos.hardening
     flake.modules.nixos.home-assistant
     flake.modules.nixos.impermanence
     flake.modules.nixos.initrd-ssh

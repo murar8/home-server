@@ -18,6 +18,15 @@ _:
       # drop idle sessions after ~10 min (interval × countMax); does not affect initrd SSH
       ClientAliveInterval = 300;
       ClientAliveCountMax = 2;
+      # SSH-7408 (lynis): more forensic detail on auth attempts.
+      LogLevel = "VERBOSE";
+      # SSH-7408: cap pre-auth attempts per connection.
+      MaxAuthTries = 3;
+      # SSH-7408: limit concurrent sessions / multiplexed channels.
+      MaxSessions = 2;
+      # SSH-7408: ClientAlive* already provides authenticated keepalives;
+      # disable the unauthenticated TCP-level ones to shut a small spoof window.
+      TCPKeepAlive = false;
     };
   };
 }
