@@ -101,7 +101,6 @@ in
     gnomeExtensions.easy-docker-containers
     gnomeExtensions.focus-changer
     gnomeExtensions.gsconnect
-    gnomeExtensions.junk-notification-cleaner
     gnomeExtensions.bing-wallpaper-changer
     gnomeExtensions.space-bar
     gnomeExtensions.syncthing-toggle
