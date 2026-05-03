@@ -32,8 +32,14 @@
   # TODO: revert to default when IOMMU group regression in 6.12.75+ is fixed (commit 7a126c1b6cfa)
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  # Raphael iGPU: scatter-gather display causes ~1s freezes from gfx ring resets and gnome-shell crashes
-  boot.kernelParams = [ "amdgpu.sg_display=0" ];
+  # Raphael iGPU workarounds:
+  # - sg_display=0: avoids display-engine soft ring resets (~1s freezes)
+  # - ppfeaturemask=0xffff7fff: disables GFXOFF power-gating, which causes hard gfx ring
+  #   timeouts on idle wake that fail soft reset and crash the compositor (MODE2 GPU reset)
+  boot.kernelParams = [
+    "amdgpu.sg_display=0"
+    "amdgpu.ppfeaturemask=0xffff7fff"
+  ];
 
   networking.hostName = "desktop";
   local.net.ip = "192.168.1.60";
