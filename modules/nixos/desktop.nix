@@ -1,10 +1,14 @@
 { pkgs, inputs, ... }:
 
 let
-  llmAgents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
+  inherit (pkgs.stdenv.hostPlatform) system;
+  llmAgents = inputs.llm-agents.packages.${system};
+  unstable = inputs.nixpkgs-unstable.legacyPackages.${system};
 in
 {
   nixpkgs.config.allowUnfree = true;
+
+  fonts.packages = [ pkgs.nerd-fonts.fira-code ];
 
   # https://www.kernel.org/doc/Documentation/admin-guide/sysrq.rst
   # reisub: keyboard (4) + signaling (64) + sync (16) + remount-ro (32) + reboot (128)
@@ -66,6 +70,7 @@ in
     usbutils
     wget
     wl-clipboard
+    unstable.zed-editor
   ];
 
 }
