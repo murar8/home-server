@@ -11,6 +11,7 @@
     flake.modules.nixos.sudo-ssh-agent
     flake.modules.nixos.restic-b2
     flake.modules.nixos.healthchecks-runitor
+    flake.modules.nixos.moonlight-kiosk
     flake.modules.nixos.tailscale-server
     flake.modules.nixos.syncthing-server
     flake.modules.nixos.samba
@@ -41,6 +42,10 @@
     users.${config.local.user}.directories = [
       ".config/syncthing"
       "Documents"
+    ];
+    users.moonlight.directories = [
+      ".config/Moonlight Game Streaming Project"
+      ".local/state/wireplumber"
     ];
     directories = [
       "/var/lib/hass"
