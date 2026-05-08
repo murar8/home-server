@@ -12,11 +12,38 @@ data "healthchecksio_channel" "email" {
   kind = "email"
 }
 
-resource "healthchecksio_check" "prodesk_heartbeat" {
-  name     = "prodesk-heartbeat"
-  desc     = "Liveness ping from prodesk via runitor"
-  tags     = ["prodesk", "heartbeat"]
-  timeout  = 1800
+resource "healthchecksio_check" "prodesk_system" {
+  name     = "prodesk-system"
+  desc     = "Hourly: systemctl is-system-running on prodesk. Doubles as liveness."
+  tags     = ["prodesk", "system"]
+  timeout  = 3600
   grace    = 600
+  channels = [data.healthchecksio_channel.email.id]
+}
+
+resource "healthchecksio_check" "prodesk_disk" {
+  name     = "prodesk-disk"
+  desc     = "Daily: /, /persist, /nix below 85% on prodesk."
+  tags     = ["prodesk", "disk"]
+  timeout  = 86400
+  grace    = 7200
+  channels = [data.healthchecksio_channel.email.id]
+}
+
+resource "healthchecksio_check" "prodesk_smart" {
+  name     = "prodesk-smart"
+  desc     = "Daily: smartctl -H on all prodesk disks."
+  tags     = ["prodesk", "smart"]
+  timeout  = 86400
+  grace    = 7200
+  channels = [data.healthchecksio_channel.email.id]
+}
+
+resource "healthchecksio_check" "prodesk_restic" {
+  name     = "prodesk-restic"
+  desc     = "Daily: restic B2 backup completion on prodesk."
+  tags     = ["prodesk", "restic"]
+  timeout  = 86400
+  grace    = 7200
   channels = [data.healthchecksio_channel.email.id]
 }
