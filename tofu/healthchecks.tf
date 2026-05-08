@@ -14,10 +14,10 @@ data "healthchecksio_channel" "email" {
 
 resource "healthchecksio_check" "prodesk_system" {
   name     = "prodesk-system"
-  desc     = "Hourly: systemctl is-system-running on prodesk. Doubles as liveness."
+  desc     = "Every 30min: systemctl is-system-running on prodesk. Doubles as liveness."
   tags     = ["prodesk", "system"]
-  timeout  = 3600
-  grace    = 600
+  timeout  = 1800
+  grace    = 300
   channels = [data.healthchecksio_channel.email.id]
 }
 

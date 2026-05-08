@@ -21,6 +21,8 @@
 
   networking.hostName = "prodesk";
 
+  hardware.bluetooth.enable = true;
+
   boot.initrd.availableKernelModules = [ "r8169" ];
   modules.initrd-ssh.hostKeys = [ "/persist/etc/secrets/initrd/ssh_host_ed25519_key" ];
 
@@ -48,6 +50,7 @@
       ".local/state/wireplumber"
     ];
     directories = [
+      "/var/lib/bluetooth"
       "/var/lib/hass"
       "/var/lib/samba"
       "/var/lib/tailscale"
