@@ -22,6 +22,9 @@
   networking.hostName = "prodesk";
 
   hardware.bluetooth.enable = true;
+  # DS4/DualSense gamepad HID driver — udev modalias autoload doesn't fire
+  # for BT-connected controllers, so load it eagerly
+  boot.kernelModules = [ "hid_playstation" ];
 
   boot.initrd.availableKernelModules = [ "r8169" ];
   modules.initrd-ssh.hostKeys = [ "/persist/etc/secrets/initrd/ssh_host_ed25519_key" ];
