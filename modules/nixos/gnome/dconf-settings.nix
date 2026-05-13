@@ -16,8 +16,10 @@ in
   };
 
   "org/gnome/desktop/interface" = {
-    accent-color = "purple";
+    accent-color = "orange";
     clock-format = "24h";
+    clock-show-seconds = true;
+    clock-show-weekday = true;
     color-scheme = "prefer-dark";
     gtk-theme = "adw-gtk3-dark";
   };

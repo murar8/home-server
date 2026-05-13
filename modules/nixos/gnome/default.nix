@@ -55,7 +55,7 @@ in
 
   programs.dconf.profiles.user.databases = [
     {
-      lockAll = true;
+      lockAll = false;
       settings = dconfSettings;
     }
   ];
