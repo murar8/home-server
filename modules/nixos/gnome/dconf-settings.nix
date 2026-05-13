@@ -148,8 +148,9 @@ in
     experimental-features = [
       "scale-monitor-framebuffer"
       "xwayland-native-scaling"
-      "variable-refresh-rate"
       "autoclose-xwayland"
+      "kms-modifiers"
+      "variable-refresh-rate"
     ];
     workspaces-only-on-primary = true;
   };
