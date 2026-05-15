@@ -27,16 +27,6 @@
       pcscd.enable = true;
       udev = {
         packages = [ pkgs.yubikey-personalization ];
-
-        # Lock sessions on YubiKey 5 unplug. Match top-level usb_device only (sub-interfaces churn
-        # during C/R). ENV{PRODUCT}=1050/407 (Yubico/YubiKey 5) — ID_* aren't set on remove events.
-        extraRules = ''
-          ACTION=="remove",\
-           SUBSYSTEM=="usb",\
-           ENV{DEVTYPE}=="usb_device",\
-           ENV{PRODUCT}=="1050/407/*",\
-           RUN+="${pkgs.systemd}/bin/loginctl lock-sessions"
-        '';
       };
     };
 
