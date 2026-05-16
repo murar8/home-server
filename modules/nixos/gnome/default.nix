@@ -60,6 +60,22 @@ in
     }
   ];
 
+  # Mirror the user's live monitor layout to GDM. GDM reads ~gdm/.config/monitors.xml;
+  # symlink it to the user's file so resolution/scale/arrangement stay in sync.
+  # ACL grants gdm dir-traverse (x) on the 0700 home path; the file itself is 0644.
+  systemd.tmpfiles.rules = [
+    "a+ /home/${config.local.user}             - - - - user:gdm:x"
+    "a+ /home/${config.local.user}/.config     - - - - user:gdm:x"
+    "L+ /run/gdm/.config/monitors.xml          - - - - /home/${config.local.user}/.config/monitors.xml"
+  ];
+
+  # Enable fractional scaling at the GDM greeter (GDM uses its own dconf profile).
+  programs.dconf.profiles.gdm.databases = [
+    {
+      settings."org/gnome/mutter" = { inherit (dconfSettings."org/gnome/mutter") experimental-features; };
+    }
+  ];
+
   # GSConnect (KDE Connect) uses ports 1714-1764
   networking.firewall = {
     allowedTCPPortRanges = [
