@@ -92,7 +92,6 @@
       # ambient cap allow-list since the unit runs as a non-root user.
       CapabilityBoundingSet = [ "CAP_DAC_READ_SEARCH" ];
       ProtectSystem = "full";
-      ProtectHome = true;
       PrivateDevices = true;
       PrivateMounts = true;
       ProtectKernelTunables = true;
