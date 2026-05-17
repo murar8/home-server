@@ -235,6 +235,7 @@ in
       "google-chrome.desktop"
       "com.mitchellh.ghostty.desktop"
       "org.gnome.Nautilus.desktop"
+      "org.gnome.Extensions.desktop"
       "org.gnome.Settings.desktop"
     ];
   };
