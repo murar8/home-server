@@ -24,10 +24,6 @@ in
     gtk-theme = "adw-gtk3-dark";
   };
 
-  "org/gnome/desktop/input-sources" = {
-    xkb-options = [ "compose:ralt" ];
-  };
-
   "org/gnome/desktop/peripherals/keyboard" = {
     numlock-state = true;
     remember-numlock-state = true;

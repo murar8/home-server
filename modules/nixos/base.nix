@@ -68,7 +68,10 @@ in
 
   console.keyMap = keyMap;
 
-  services.xserver.xkb.layout = keyMap;
+  services.xserver.xkb = {
+    layout = keyMap;
+    options = "compose:ralt";
+  };
 
   boot = {
     initrd.systemd.enable = true;
